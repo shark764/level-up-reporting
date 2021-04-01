@@ -1,0 +1,26 @@
+{
+  "name": "level-up-reporting",
+  "version": "1.0.0",
+  "description": "Reporting Server project | Level Up | Project made with NodeJs, ExpressJs, Socket.io, Apollo Graphql, MongoDB, Redis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/shark764/level-up-reporting.git"
+  },
+  "author": "Farid Hernandez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/shark764/level-up-reporting/issues"
+  },
+  "homepage": "https://gitlab.com/shark764/level-up-reporting#readme",
+  "dependencies": {
+    "socket.io-client": "^4.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}

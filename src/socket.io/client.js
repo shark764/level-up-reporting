@@ -4,6 +4,7 @@ import { models } from '../models';
 import { EVENTS } from '../subscription';
 
 import pubsub from '../subscription';
+import { log } from '../utils';
 
 const port = process.env.SOCKET_IO_PORT || 8001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -11,24 +12,29 @@ const isProduction = process.env.NODE_ENV === 'production';
 const ioClient = io(`http://localhost:${port}`, {
   path: '/levelup-socket.io',
   reconnectionDelayMax: 10000,
+  withCredentials: true,
+  extraHeaders: {
+    'levelup-token-header':
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+  },
 });
 ioClient.connect();
 
 ioClient.on('connect', () => {
-  console.log(
-    '\x1b[33m%s\x1b[0m',
+  log(
+    'success',
     `\nSocket.IO Client active and listening on port ${port} ....`,
     `\n\tStart date: ${new Date()}`
   );
-  console.log(
-    '\x1b[35m%s\x1b[0m',
+  log(
+    'info',
     `\tClient receiving messages from: http://localhost:${port}/graphql`
   );
 });
 
 ioClient.on('_game_event-start', async (message) => {
   if (!isProduction) {
-    console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
+    log('info', `\nMessage received from server`, message);
   }
   const { game, player } = message;
   const newGame = await models.Game.create({ name: game.name });
@@ -39,13 +45,13 @@ ioClient.on('_game_event-start', async (message) => {
 
 ioClient.on('_game_event-hit', (message) => {
   if (!isProduction) {
-    console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
+    log('info', `\nMessage received from server`, message);
   }
 });
 
 ioClient.on('_game_event-end', (message) => {
   if (!isProduction) {
-    console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
+    log('info', `\nMessage received from server`, message);
   }
   const hits = [];
   models.Hit.insertMany(hits)

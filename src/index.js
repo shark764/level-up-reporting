@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import bodyParser from 'body-parser';
+import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
 
@@ -25,6 +25,7 @@ import resolvers from './resolvers';
 import './socket.io/client';
 
 import pubsub from './subscription';
+import { log } from './utils';
 
 const port = process.env.PORT || 8000;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -67,13 +68,10 @@ const server = new ApolloServer({
   subscriptions: {
     path: '/subscriptions',
     onConnect: (connectionParams, webSocket, context) => {
-      console.log('\x1b[35m%s\x1b[0m', `\nConnected to subscription service!`);
+      log('success', `\nConnected to subscription service!`);
     },
     onDisconnect: (webSocket, context) => {
-      console.log(
-        '\x1b[31m%s\x1b[0m',
-        `\nDisconnected from subscription service!`
-      );
+      log('error', `\nDisconnected from subscription service!`);
     },
   },
   context: {
@@ -140,22 +138,22 @@ app.get('/greeting', (req, res) => {
  * Set port, listen for requests
  */
 httpServer.listen({ port }, () => {
-  console.log(
-    '\x1b[33m%s\x1b[0m',
+  log(
+    'success',
     `\nServer listening on port ${port} ....`,
     `\n\tStart date: ${new Date()}`
   );
-  console.log(
-    '\x1b[35m%s\x1b[0m',
+  log(
+    'info',
     `\tGraphql Server ready at http://localhost:${port}${server.graphqlPath}`
   );
-  console.log(
-    '\x1b[35m%s\x1b[0m',
+  log(
+    'info',
     `\tSubscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`
   );
   if (!isProduction) {
-    console.log(
-      '\x1b[35m%s\x1b[0m',
+    log(
+      'default',
       `\tRun Graphql Playground at http://localhost:${port}/graphql`
     );
   }

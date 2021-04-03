@@ -1,7 +1,7 @@
-const { Server } = require('socket.io');
+import { Server } from 'socket.io';
 import 'dotenv/config';
 
-const { generateHit } = require('./utils');
+import { generateHit } from './utils';
 
 const SocketIOServer = new Server(6000, {
   path: '/levelup-socket.io',

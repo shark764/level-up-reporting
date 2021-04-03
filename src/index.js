@@ -3,6 +3,7 @@ import express from 'express';
 const bodyParser = require('body-parser');
 const cors = require('cors');
 import { ApolloServer } from 'apollo-server-express';
+import { createServer } from 'http';
 
 import mongoose from 'mongoose';
 
@@ -10,13 +11,20 @@ import mongoose from 'mongoose';
  * Connects to database
  */
 import './models/db';
+import models from './models';
 /**
- * schema contains typeDefs and Resolvers
+ * schema contains typeDefs
  * for Apollo Server
  */
 import schema from './schema';
+/**
+ * resolvers
+ */
+import resolvers from './resolvers';
 
 import './socket.io/client';
+
+import pubsub from './subscription';
 
 const port = process.env.PORT || 8000;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,7 +61,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const server = new ApolloServer({
-  schema,
+  // schema,
+  typeDefs: schema,
+  resolvers,
+  subscriptions: {
+    path: '/subscriptions',
+    onConnect: (connectionParams, webSocket, context) => {
+      console.log('\x1b[35m%s\x1b[0m', `\nConnected to subscription service!`);
+    },
+    onDisconnect: (webSocket, context) => {
+      console.log(
+        '\x1b[31m%s\x1b[0m',
+        `\nDisconnected from subscription service!`
+      );
+    },
+  },
+  context: {
+    models,
+    pubsub,
+  },
   cors: true,
   playground: !isProduction
     ? {
@@ -65,7 +91,7 @@ const server = new ApolloServer({
     : false,
   introspection: true,
   tracing: true,
-  path: '/',
+  path: '/levelup-graphql',
   formatError: (error) => {
     // remove the internal sequelize error message
     // leave only the important validation error
@@ -80,6 +106,8 @@ const server = new ApolloServer({
   },
 });
 
+const httpServer = createServer(app);
+
 server.applyMiddleware({
   app,
   path: '/levelup-graphql',
@@ -93,6 +121,7 @@ server.applyMiddleware({
       }
     }),
 });
+server.installSubscriptionHandlers(httpServer);
 
 /**
  * Define the first route
@@ -110,11 +139,19 @@ app.get('/greeting', (req, res) => {
 /**
  * Set port, listen for requests
  */
-app.listen({ port }, () => {
+httpServer.listen({ port }, () => {
   console.log(
     '\x1b[33m%s\x1b[0m',
     `\nServer listening on port ${port} ....`,
     `\n\tStart date: ${new Date()}`
+  );
+  console.log(
+    '\x1b[35m%s\x1b[0m',
+    `\tGraphql Server ready at http://localhost:${port}${server.graphqlPath}`
+  );
+  console.log(
+    '\x1b[35m%s\x1b[0m',
+    `\tSubscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`
   );
   if (!isProduction) {
     console.log(

@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import { composeWithMongoose } from 'graphql-compose-mongoose';
 
 export const userSchema = new Schema(
   {
@@ -15,12 +14,6 @@ export const userSchema = new Schema(
       unique: true,
       required: true,
     },
-    tasks: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Task',
-      },
-    ],
   },
   {
     collection: 'users',
@@ -29,4 +22,3 @@ export const userSchema = new Schema(
 );
 
 export const User = mongoose.model('User', userSchema);
-export const UserTC = composeWithMongoose(User);

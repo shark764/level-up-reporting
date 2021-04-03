@@ -1,5 +1,9 @@
 import 'dotenv/config';
 import io from 'socket.io-client';
+import { models } from '../models';
+import { EVENTS } from '../subscription';
+
+import pubsub from '../subscription';
 
 const port = process.env.SOCKET_IO_PORT || 8001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -22,8 +26,33 @@ ioClient.on('connect', () => {
   );
 });
 
+ioClient.on('_game_event-start', async (message) => {
+  if (!isProduction) {
+    console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
+  }
+  const { game, player } = message;
+  const newGame = await models.Game.create({ name: game.name });
+  pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
+  const newPlayer = await models.Player.create({ name: player.name });
+  pubsub.publish(EVENTS.PLAYER.PLAYER_CREATED, newPlayer);
+});
+
 ioClient.on('_game_event-hit', (message) => {
   if (!isProduction) {
     console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
   }
+});
+
+ioClient.on('_game_event-end', (message) => {
+  if (!isProduction) {
+    console.log('\x1b[33m%s\x1b[0m', `\nMessage received from server`, message);
+  }
+  const hits = [];
+  models.Hit.insertMany(hits)
+    .then(function(docs) {
+      // response.json(docs);
+    })
+    .catch(function(err) {
+      // response.status(500).send(err);
+    });
 });

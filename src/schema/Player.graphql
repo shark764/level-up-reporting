@@ -1,0 +1,18 @@
+type Query {
+  getPlayers: [Player!]
+  getPlayer(id: ID!): Player
+}
+
+type Mutation {
+  addPlayer(name: String!): Player!
+  updatePlayer(id: ID!, name: String!): Player
+  removePlayer(id: ID!): Player
+}
+
+type Player {
+  id: ID!
+  name: String!
+  hits: [Hit!]
+  createdAt: DateTime
+  updatedAt: DateTime
+}

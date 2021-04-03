@@ -1,20 +1,20 @@
-import { SchemaComposer } from 'graphql-compose';
+import { join } from 'path';
+import { loadFilesSync } from '@graphql-tools/load-files';
+import { mergeTypeDefs } from '@graphql-tools/merge';
 
-// import db from '../models/db';
-
-const schemaComposer = new SchemaComposer();
-
-import { UserMutation, UserQuery } from './user';
-import { TaskMutation, TaskQuery } from './task';
-
-schemaComposer.Query.addFields({
-  ...UserQuery,
-  ...TaskQuery,
+const typesArray = loadFilesSync(join(__dirname, '.'), {
+  extensions: ['graphql'],
+  ignoreIndex: true,
 });
 
-schemaComposer.Mutation.addFields({
-  ...UserMutation,
-  ...TaskMutation,
-});
+const typeDefs = mergeTypeDefs(typesArray);
+/**
+ * Uncomment if you want to see the final result
+ * of schemas files merged
+ */
+// import { print } from 'graphql';
+// import fs from 'fs'; /*  */
+// const printedTypeDefs = print(typeDefs);
+// fs.writeFileSync(join(__dirname, '.', 'schema.graphql'), printedTypeDefs);
 
-export default schemaComposer.buildSchema();
+export default typeDefs;

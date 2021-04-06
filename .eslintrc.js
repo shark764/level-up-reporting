@@ -33,5 +33,11 @@ module.exports = {
     'no-var': 2,
     'linebreak-style': [2, 'unix'],
     semi: [1, 'always'],
+    'prefer-destructuring': [
+      'error',
+      { array: true, object: true },
+      { enforceForRenamedProperties: false },
+    ],
+    'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
   },
 };

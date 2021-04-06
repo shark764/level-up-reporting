@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      src="https://cdn.socket.io/3.1.3/socket.io.min.js"
+      integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      let gameId;
+      window.onload = function() {
+        const socket = io(`http://localhost:3010?type=devices`, {
+          path: '/levelup-socket.io',
+          reconnectionDelayMax: 10000,
+        });
+        socket.on('connect', function() {});
+
+        socket.on('_game_event-start', function(message) {
+          console.log(message);
+          gameId = message.gameId;
+          newButton.style.display = 'none';
+          hitButton.style.display = 'block';
+          endButton.style.display = 'block';
+        });
+
+        socket.on('_game_event-hit', function(message) {
+          console.log(message);
+        });
+
+        socket.on('_game_event-end', function(message) {
+          gameId = '';
+          newButton.style.display = 'block';
+          hitButton.style.display = 'none';
+          endButton.style.display = 'none';
+        });
+
+        var newButton = document.getElementById('new');
+        var hitButton = document.getElementById('hit');
+        var endButton = document.getElementById('end');
+
+        hitButton.style.display = 'none';
+        endButton.style.display = 'none';
+
+        var form = document.getElementById('form');
+
+        newButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          socket.emit('_game_event::new-game');
+        });
+
+        hitButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          socket.emit('_game_event::target-hit', { gameId: gameId });
+        });
+
+        endButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          socket.emit('_game_event::finished', { gameId: gameId });
+        });
+
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var data = { count: 4 };
+
+          socket.emit('hit', data);
+        });
+      };
+    </script>
+  </head>
+  <body>
+    <form id="form" action="">
+      <button id="new">New Game</button>
+      <button id="hit">Hit</button>
+      <button id="end">End Game</button>
+    </form>
+  </body>
+</html>

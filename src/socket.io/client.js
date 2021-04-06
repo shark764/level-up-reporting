@@ -5,11 +5,12 @@ import { EVENTS } from '../subscription';
 
 import pubsub from '../subscription';
 import { log } from '../utils';
+import { sadd, smembers } from '../redis';
 
 const port = process.env.SOCKET_IO_PORT || 8001;
 const isProduction = process.env.NODE_ENV === 'production';
 
-const ioClient = io(`http://localhost:${port}`, {
+const ioClient = io(`http://localhost:${port}?type=server`, {
   path: '/levelup-socket.io',
   reconnectionDelayMax: 10000,
   withCredentials: true,
@@ -32,7 +33,7 @@ ioClient.on('connect', () => {
   );
 });
 
-ioClient.on('_game_event-start', async (message) => {
+ioClient.on('_game_event-start', async (message, callback) => {
   if (!isProduction) {
     log('info', `\nMessage received from server`, message);
   }
@@ -41,24 +42,35 @@ ioClient.on('_game_event-start', async (message) => {
   pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
   const newPlayer = await models.Player.create({ name: player.name });
   pubsub.publish(EVENTS.PLAYER.PLAYER_CREATED, newPlayer);
+  callback(newGame._id);
 });
 
-ioClient.on('_game_event-hit', (message) => {
+ioClient.on('_game_event-hit', (message, callback) => {
   if (!isProduction) {
     log('info', `\nMessage received from server`, message);
   }
+  sadd(message.hit.gameId, JSON.stringify(message.hit));
+  callback('ok');
 });
 
-ioClient.on('_game_event-end', (message) => {
+ioClient.on('_game_event-end', (message, callback) => {
   if (!isProduction) {
     log('info', `\nMessage received from server`, message);
   }
-  const hits = [];
-  models.Hit.insertMany(hits)
-    .then(function(docs) {
-      // response.json(docs);
-    })
-    .catch(function(err) {
-      // response.status(500).send(err);
-    });
+
+  smembers(message.gameId, (err, value) => {
+    if (err) {
+      log('error', err);
+    }
+    const hits = value
+      .filter((hit) => hit.length > 0)
+      .map((hit) => JSON.parse(hit));
+    models.Hit.insertMany(hits)
+      .then((docs) => {
+        callback(docs);
+      })
+      .catch((err) => {
+        log('error', err);
+      });
+  });
 });

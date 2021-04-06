@@ -2,12 +2,12 @@ import mongoose, { Schema } from 'mongoose';
 
 export const hitSchema = new Schema(
   {
-    player: {
+    /* player: {
       type: Schema.Types.ObjectId,
       ref: 'Player',
       required: true,
-    },
-    game: {
+    }, */
+    gameId: {
       type: Schema.Types.ObjectId,
       ref: 'Game',
       required: true,

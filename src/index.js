@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
+import path from 'path';
 
 import mongoose from 'mongoose';
 
@@ -48,13 +48,17 @@ app.use(cors(corsOptions));
 
 /**
  * Parse requests of content-type - application/json
+ * Used to parse JSON bodies
+ * WARNING!:
+ *    body-parser has been deprecated
  */
-app.use(bodyParser.json());
+app.use(express.json());
 
 /**
  * Parse requests of content-type - application/x-www-form-urlencoded
+ * Parse URL-encoded bodies
  */
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 /**
  * Use the express-static middleware
@@ -124,7 +128,7 @@ server.installSubscriptionHandlers(httpServer);
 /**
  * Define the first route
  */
-app.get('/hello', function(req, res) {
+app.get('/hello', (req, res) => {
   res.send('<h1>Hello World!</h1>');
 });
 /**
@@ -132,6 +136,10 @@ app.get('/hello', function(req, res) {
  */
 app.get('/greeting', (req, res) => {
   res.json({ message: 'Hola mundo!' });
+});
+
+app.get('/ioclient', (req, res) => {
+  res.sendFile(path.join(process.cwd() + '/public/testioclient.html'));
 });
 
 /**

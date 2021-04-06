@@ -20,6 +20,8 @@ NODE_ENV=development
 PORT=9000
 SOCKET_IO_PORT=9001
 MONGODB_URI=mongodb://localhost:27017/your_local_db
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
 ```
 
 If you are using a local mongodb database, start the service
@@ -27,6 +29,13 @@ If you are using a local mongodb database, start the service
 ```bash
 sudo service mongod start
 ```
+
+If you using a local redis server, confirm that is running
+
+```bash
+redis cli
+```
+If you are having troubles with redis, check this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04)
 
 Run server
 
@@ -55,6 +64,7 @@ npm run prettify
 - [MongoDB](https://www.mongodb.com/)
 - [Apollo Graphql](https://www.apollographql.com/)
 - [Socket.IO](https://socket.io/)
+- [Redis](https://redis.io/topics/quickstart)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

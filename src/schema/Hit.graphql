@@ -29,3 +29,8 @@ type Hit {
   createdAt: DateTime
   updatedAt: DateTime
 }
+
+type Subscription {
+  hitAdded: Hit!
+  hitBatch: [Hit!]!
+}

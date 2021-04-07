@@ -67,6 +67,8 @@ ioClient.on('_game_event-end', (message, callback) => {
       .map((hit) => JSON.parse(hit));
     models.Hit.insertMany(hits)
       .then((docs) => {
+        //docs.forEach(doc => pubsub.publish(EVENTS.HIT.HIT_CREATED, doc));
+        pubsub.publish(EVENTS.HIT.HIT_BATCH, docs);
         callback(docs);
       })
       .catch((err) => {

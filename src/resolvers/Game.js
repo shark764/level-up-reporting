@@ -16,7 +16,7 @@ export default {
   },
   Game: {
     hits: async (parent, args, { models }) =>
-      await models.Hit.find({ game: parent.id }),
+      await models.Hit.find({ gameId: parent.id }),
   },
 
   Subscription: {

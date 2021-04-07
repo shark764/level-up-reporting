@@ -1,3 +1,5 @@
+import { subscriptionResolver, EVENTS } from '../subscription';
+
 export default {
   Query: {
     getHits: async (parent, args, { models }) => await models.Hit.find(),
@@ -6,27 +8,31 @@ export default {
   Mutation: {
     addHit: async (
       parent,
-      { player, game, deviceId, value1, value2, value3, value4 },
+      { gameId, deviceId, value1, value2, value3, value4 },
       { models, pubsub }
     ) => {
       const record = await models.Hit.create({
-        player,
-        game,
+        gameId,
         deviceId,
         value1,
         value2,
         value3,
         value4,
       });
-      pubsub.publish('NEW_HIT', record);
+      pubsub.publish(EVENTS.HIT.HIT_CREATED, record);
 
       return record;
     },
   },
   Hit: {
-    player: async (parent, args, { models }) =>
-      await models.Player.findById(parent.player),
+    /*player: async (parent, args, { models }) =>
+      await models.Player.findById(parent.player),*/
     game: async (parent, args, { models }) =>
-      await models.Game.findById(parent.game),
+      await models.Game.findById(parent.gameId),
+  },
+
+  Subscription: {
+    hitAdded: subscriptionResolver(EVENTS.HIT.HIT_CREATED),
+    hitBatch: subscriptionResolver(EVENTS.HIT.HIT_BATCH),
   },
 };

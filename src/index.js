@@ -4,6 +4,7 @@ import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
 import path from 'path';
+import addRequestId from 'express-request-id';
 
 import mongoose from 'mongoose';
 
@@ -11,7 +12,7 @@ import mongoose from 'mongoose';
  * Connects to database
  */
 import './models/db';
-import models from './models';
+import { models } from './models';
 /**
  * schema contains typeDefs
  * for Apollo Server
@@ -31,6 +32,8 @@ const port = process.env.PORT || 8000;
 const isProduction = process.env.NODE_ENV === 'production';
 
 const app = express();
+
+app.use(addRequestId());
 
 /**
  * Restricting access to server using a whitelist

@@ -5,12 +5,21 @@ Will capture messages from Game Controller Server and send results to Web BFF an
 
 ## Installation
 
-Use the package manager [npm](https://www.npmjs.com/get-npm) to install dependencies.
+This project requires [Node.js](https://nodejs.org/) v14+ to run.
+
+Using .nvmrc file helps to normalize node version used by all maintainers.
+If you are required to use version specified in this file, run these commands.
+
+```bash
+nvm use
+nvm install
+```
+
+Use the package manager [npm](https://www.npmjs.com/get-npm) v6+ to install dependencies and devDependencies.
 
 ```bash
 npm install
 ```
-
 ## Usage
 
 Create a `.env` file with the following content
@@ -24,20 +33,22 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 ```
 
-If you are using a local mongodb database, start the service
+If you are using a local [MongoDB](https://docs.mongodb.com/manual/installation/) database, start the **mongod** service
 
 ```bash
 sudo service mongod start
 ```
 
-If you using a local redis server, confirm that is running
+If you using a local [Redis](https://redis.io/topics/quickstart) server, start **redis-server** service and confirm that is running
 
 ```bash
-redis cli
+sudo service redis-server start
+redis-cli
 ```
+
 If you are having troubles with redis, check this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04)
 
-Run server
+**Run server**
 
 ```bash
 npm run dev

@@ -1,4 +1,4 @@
-import { connection } from './db';
+import connection from './db';
 import { User } from './User';
 import { Task } from './Task';
 import { Message } from './Message';

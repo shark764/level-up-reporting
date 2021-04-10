@@ -4,7 +4,11 @@ module.exports = {
     node: true,
     es2021: true,
   },
-  extends: ['eslint:recommended'],
+  extends: [
+    'eslint:recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+  ],
   parser: 'babel-eslint',
   parserOptions: {
     ecmaFeatures: {
@@ -39,5 +43,11 @@ module.exports = {
       { enforceForRenamedProperties: false },
     ],
     'prefer-arrow-callback': ['error', { allowNamedFunctions: true }],
+    'import/no-unresolved': [2, { commonjs: true, amd: true }],
+    'import/named': 2,
+    'import/namespace': 2,
+    'import/default': 2,
+    'import/export': 2,
+    'import/first': 2,
   },
 };

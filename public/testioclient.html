@@ -21,7 +21,7 @@
         });
         socket.on('connect', function() {});
 
-        socket.on('_game_event-start', function(message) {
+        socket.on('_game_event-started', function(message) {
           console.log(message);
           gameId = message.gameId;
           newButton.style.display = 'none';
@@ -33,7 +33,7 @@
           console.log(message);
         });
 
-        socket.on('_game_event-end', function(message) {
+        socket.on('_game_event-finished', function(message) {
           gameId = '';
           newButton.style.display = 'block';
           hitButton.style.display = 'none';

@@ -4,7 +4,7 @@
   "description": "Reporting Server project | Level Up | Project made with NodeJs, ExpressJs, Socket.io, Apollo Graphql, MongoDB, Redis",
   "main": "index.js",
   "engines": {
-    "node": "14.15.0"
+    "node": "14.16.1"
   },
   "scripts": {
     "build": "babel src --out-dir dist",
@@ -30,7 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/shark764/level-up-reporting.git"
+    "url": "git+https://gitlab.com/focus-ventures/level-up-reporting.git"
   },
   "keywords": [
     "api",
@@ -45,15 +45,16 @@
   "author": "Farid Hernandez",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/shark764/level-up-reporting/issues"
+    "url": "https://gitlab.com/focus-ventures/level-up-reporting/issues"
   },
-  "homepage": "https://gitlab.com/shark764/level-up-reporting#readme",
+  "homepage": "https://gitlab.com/focus-ventures/level-up-reporting#readme",
   "dependencies": {
     "apollo-server-express": "^2.22.2",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-request-id": "^1.4.1",
     "graphql": "^15.5.0",
     "graphql-iso-date": "^3.6.1",
     "graphql-middleware": "^6.0.5",

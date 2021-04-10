@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import io from 'socket.io-client';
 import { models } from '../models';
-import { EVENTS } from '../subscription';
+import pubsub, { EVENTS } from '../subscription';
 
-import pubsub from '../subscription';
 import { log } from '../utils';
 import { sadd, smembers } from '../redis';
 

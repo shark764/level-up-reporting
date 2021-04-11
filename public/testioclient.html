@@ -11,7 +11,7 @@
       let gameId;
       window.onload = function() {
         const socket = io(`http://localhost:3010?type=devices`, {
-          path: '/levelup-socket.io',
+          path: '/game-controller-socket.io',
           reconnectionDelayMax: 10000,
           withCredentials: true,
           extraHeaders: {
@@ -21,19 +21,23 @@
         });
         socket.on('connect', function() {});
 
-        socket.on('_game_event-started', function(message) {
+        socket.on('__reporting_bff_::_game_event::_started', function(message) {
           console.log(message);
-          gameId = message.gameId;
+          gameId = message.id;
           newButton.style.display = 'none';
           hitButton.style.display = 'block';
           endButton.style.display = 'block';
         });
 
-        socket.on('_game_event-hit', function(message) {
+        socket.on('__reporting_bff_::_game_event::_target-hit', function(
+          message
+        ) {
           console.log(message);
         });
 
-        socket.on('_game_event-finished', function(message) {
+        socket.on('__reporting_bff_::_game_event::_finished', function(
+          message
+        ) {
           gameId = '';
           newButton.style.display = 'block';
           hitButton.style.display = 'none';
@@ -51,17 +55,19 @@
 
         newButton.addEventListener('click', function(e) {
           e.preventDefault();
-          socket.emit('_game_event::new-game');
+          socket.emit('__device_::_game_event::_new-game');
         });
 
         hitButton.addEventListener('click', function(e) {
           e.preventDefault();
-          socket.emit('_game_event::target-hit', { gameId: gameId });
+          socket.emit('__device_::_game_event::_target-hit', {
+            gameId: gameId,
+          });
         });
 
         endButton.addEventListener('click', function(e) {
           e.preventDefault();
-          socket.emit('_game_event::finished', { gameId: gameId });
+          socket.emit('__device_::_game_event::_end-game', { gameId: gameId });
         });
 
         form.addEventListener('submit', function(e) {

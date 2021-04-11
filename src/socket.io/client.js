@@ -10,7 +10,7 @@ const port = process.env.SOCKET_IO_PORT || 8001;
 const isProduction = process.env.NODE_ENV === 'production';
 
 const ioClient = io(`http://localhost:${port}?type=server`, {
-  path: '/levelup-socket.io',
+  path: '/game-controller-socket.io',
   reconnectionDelayMax: 10000,
   withCredentials: true,
   extraHeaders: {
@@ -32,27 +32,33 @@ ioClient.on('connect', () => {
   );
 });
 
-ioClient.on('_game_event-start', async (message, callback) => {
-  if (!isProduction) {
-    log('info', `\nMessage received from server`, message);
+ioClient.on(
+  '__game_controller_::_game_event::_start',
+  async (message, callback) => {
+    if (!isProduction) {
+      log('info', `\nMessage received from server`, message);
+    }
+    const { game, player } = message;
+    const newGame = await models.Game.create({ name: game.name });
+    pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
+    const newPlayer = await models.Player.create({ name: player.name });
+    pubsub.publish(EVENTS.PLAYER.PLAYER_CREATED, newPlayer);
+    callback({ id: newGame._id, data: newGame });
   }
-  const { game, player } = message;
-  const newGame = await models.Game.create({ name: game.name });
-  pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
-  const newPlayer = await models.Player.create({ name: player.name });
-  pubsub.publish(EVENTS.PLAYER.PLAYER_CREATED, newPlayer);
-  callback(newGame._id);
-});
+);
 
-ioClient.on('_game_event-hit', (message, callback) => {
-  if (!isProduction) {
-    log('info', `\nMessage received from server`, message);
+ioClient.on(
+  '__game_controller_::_game_event::_target-hit',
+  (message, callback) => {
+    if (!isProduction) {
+      log('info', `\nMessage received from server`, message);
+    }
+    sadd(message.hit.gameId, JSON.stringify(message.hit));
+    callback({ gameId: message.hit.gameId, data: message.hit });
   }
-  sadd(message.hit.gameId, JSON.stringify(message.hit));
-  callback('ok');
-});
+);
 
-ioClient.on('_game_event-end', (message, callback) => {
+ioClient.on('__game_controller_::_game_event::_finish', (message, callback) => {
   if (!isProduction) {
     log('info', `\nMessage received from server`, message);
   }
@@ -68,7 +74,7 @@ ioClient.on('_game_event-end', (message, callback) => {
       .then((docs) => {
         //docs.forEach(doc => pubsub.publish(EVENTS.HIT.HIT_CREATED, doc));
         pubsub.publish(EVENTS.HIT.HIT_BATCH, docs);
-        callback(docs);
+        callback({ data: docs });
       })
       .catch((err) => {
         log('error', err);

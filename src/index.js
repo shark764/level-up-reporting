@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
+import { Server } from 'socket.io';
 import path from 'path';
 import addRequestId from 'express-request-id';
 
@@ -68,6 +69,8 @@ app.use(express.urlencoded({ extended: true }));
  */
 app.use(express.static('public'));
 
+const httpServer = createServer(app);
+
 const server = new ApolloServer({
   // schema,
   typeDefs: schema,
@@ -111,8 +114,6 @@ const server = new ApolloServer({
   },
 });
 
-const httpServer = createServer(app);
-
 server.applyMiddleware({
   app,
   path: '/levelup-graphql',
@@ -127,6 +128,47 @@ server.applyMiddleware({
     }),
 });
 server.installSubscriptionHandlers(httpServer);
+
+const ioServer = new Server(httpServer, {
+  path: '/levelup-socket.io',
+  pingInterval: 10000,
+  pingTimeout: 5000,
+  cookie: false,
+  cors: {
+    ...corsOptions,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['levelup-token-header'],
+    credentials: true,
+  },
+});
+
+const connectedSocketClients = new Map();
+
+ioServer.on('connection', (socket) => {
+  log('info', `Client connected [id=${socket.id}]`);
+  // console.log('headers', socket.handshake.headers); // levelup-token-header
+  const { type } = socket.handshake.query;
+  connectedSocketClients.set(socket.id, {
+    type,
+    socket,
+  });
+
+  /**
+   * Handle when socket client sends data
+   */
+  socket.on('_game_running-test-data', (data) => {
+    console.log('_game_running-test-data', data);
+    socket.emit('_game_event-hit', { data });
+  });
+
+  /**
+   * When socket disconnects, remove it from the list:
+   */
+  socket.on('disconnect', (reason) => {
+    connectedSocketClients.delete(socket.id);
+    log('warning', `Client gone [id=${socket.id}]`, reason);
+  });
+});
 
 /**
  * Define the first route

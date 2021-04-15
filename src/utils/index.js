@@ -1,3 +1,14 @@
+export const apolloPath = '/reporting-bff-graphql';
+export const socketIOPath = '/reporting-bff-socket.io';
+
+const rooms = {
+  'gateway-server': 'gateway-servers',
+  'web-client': 'web-clients',
+  'mobile-client': 'mobile-clients',
+  device: 'devices',
+};
+export const getRoomByClientType = (type) => rooms[type];
+
 export function log(type, msg, ...args) {
   switch (type) {
     case 'info':

@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
 import path from 'path';
 import addRequestId from 'express-request-id';
 
@@ -24,11 +23,18 @@ import schema from './schema';
  */
 import resolvers from './resolvers';
 
-import './socket.io/client';
-
 import pubsub from './subscription';
-import { log } from './utils';
+import { apolloPath, log } from './utils';
+import { whiteList } from './utils/consts';
 
+/**
+ * Socket.io is attached to a new HTTP Server so it uses a different port
+ * We need this since Apollo is already using HTTP Server previously configured.
+ * Socket.IO then listen to a new HTTP Server with a different port.
+ */
+import './socket.io/server';
+
+const domain = process.env.DOMAIN || 'localhost';
 const port = process.env.PORT || 8000;
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -40,11 +46,7 @@ app.use(addRequestId());
  * Restricting access to server using a whitelist
  */
 const corsOptions = {
-  origin: [
-    /(localhost|127.0.0.1)./,
-    'https://react-socket-io-client-1.herokuapp.com',
-    'https://react-socket-io-client-1.netlify.app',
-  ],
+  origin: whiteList,
   optionsSuccessStatus: 200, // For legacy browser support
 };
 
@@ -78,10 +80,10 @@ const server = new ApolloServer({
   subscriptions: {
     path: '/subscriptions',
     onConnect: (connectionParams, webSocket, context) => {
-      log('success', `\nConnected to subscription service!`);
+      log('success', `\nClient connected to subscription service!`);
     },
     onDisconnect: (webSocket, context) => {
-      log('error', `\nDisconnected from subscription service!`);
+      log('error', `\nClient disconnected from subscription service!`);
     },
   },
   context: {
@@ -91,7 +93,7 @@ const server = new ApolloServer({
   cors: true,
   playground: !isProduction
     ? {
-        endpoint: `http://localhost:${port}/levelup-graphql`,
+        endpoint: `http://${domain}:${port}${apolloPath}`,
         settings: {
           'editor.theme': 'dark',
         },
@@ -99,7 +101,7 @@ const server = new ApolloServer({
     : false,
   introspection: true,
   tracing: true,
-  path: '/levelup-graphql',
+  path: apolloPath,
   formatError: (error) => {
     // remove the internal sequelize error message
     // leave only the important validation error
@@ -116,7 +118,7 @@ const server = new ApolloServer({
 
 server.applyMiddleware({
   app,
-  path: '/levelup-graphql',
+  path: apolloPath,
   cors: true,
   onHealthCheck: () =>
     new Promise((resolve, reject) => {
@@ -128,47 +130,6 @@ server.applyMiddleware({
     }),
 });
 server.installSubscriptionHandlers(httpServer);
-
-const ioServer = new Server(httpServer, {
-  path: '/levelup-socket.io',
-  pingInterval: 10000,
-  pingTimeout: 5000,
-  cookie: false,
-  cors: {
-    ...corsOptions,
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['levelup-token-header'],
-    credentials: true,
-  },
-});
-
-const connectedSocketClients = new Map();
-
-ioServer.on('connection', (socket) => {
-  log('info', `Client connected [id=${socket.id}]`);
-  // console.log('headers', socket.handshake.headers); // levelup-token-header
-  const { type } = socket.handshake.query;
-  connectedSocketClients.set(socket.id, {
-    type,
-    socket,
-  });
-
-  /**
-   * Handle when socket client sends data
-   */
-  socket.on('_game_running-test-data', (data) => {
-    console.log('_game_running-test-data', data);
-    socket.emit('_game_event-hit', { data });
-  });
-
-  /**
-   * When socket disconnects, remove it from the list:
-   */
-  socket.on('disconnect', (reason) => {
-    connectedSocketClients.delete(socket.id);
-    log('warning', `Client gone [id=${socket.id}]`, reason);
-  });
-});
 
 /**
  * Define the first route
@@ -193,21 +154,12 @@ app.get('/ioclient', (req, res) => {
 httpServer.listen({ port }, () => {
   log(
     'success',
-    `\nServer listening on port ${port} ....`,
-    `\n\tStart date: ${new Date()}`
+    `\nHTTP Server listening on port ${port} ....`,
+    `\n\tGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
+    `\n\tSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
+    !isProduction
+      ? `\n\tRun Graphql Playground at http://${domain}:${port}${apolloPath}`
+      : '',
+    `\n\tStarting timestamp: ${new Date()}`
   );
-  log(
-    'info',
-    `\tGraphql Server ready at http://localhost:${port}${server.graphqlPath}`
-  );
-  log(
-    'info',
-    `\tSubscriptions ready at ws://localhost:${port}${server.subscriptionsPath}`
-  );
-  if (!isProduction) {
-    log(
-      'default',
-      `\tRun Graphql Playground at http://localhost:${port}/graphql`
-    );
-  }
 });

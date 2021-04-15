@@ -57,9 +57,9 @@ npm run dev
 Open Graphql Playground
 
 ```bash
-http://localhost:${PORT}/levelup-graphql
+http://localhost:${PORT}/reporting-bff-graphql
 ```
-Example: [http://localhost:9000/levelup-graphql](http://localhost:9000/levelup-graphql)
+Example: [http://localhost:9000/reporting-bff-graphql](http://localhost:9000/reporting-bff-graphql)
 
 ## Utilities
 

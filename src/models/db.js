@@ -22,9 +22,9 @@ connection
     log(
       'success',
       `\nConnected to mongodb database ....`,
-      `\n\tStart date: ${new Date()}`
+      `\n\tString connection: ${process.env.MONGODB_URI}`,
+      `\n\tStarting timestamp: ${new Date()}`
     );
-    log('info', `\tString connection: ${process.env.MONGODB_URI}`);
     return db;
   })
   .catch((err) => {

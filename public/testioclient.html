@@ -8,15 +8,19 @@
     ></script>
 
     <script>
+      const port = 3010;
       let gameId;
       window.onload = function() {
-        const socket = io(`http://localhost:3010?type=devices`, {
+        const socket = io(`http://localhost:${port}`, {
           path: '/game-controller-socket.io',
           reconnectionDelayMax: 10000,
           withCredentials: true,
           extraHeaders: {
             'levelup-token-header':
               'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+          },
+          query: {
+            type: 'device',
           },
         });
         socket.on('connect', function() {});

@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+    web-reporting:
+      build: .
+      env_file:
+        - .env.local
+        # NODE_ENV: development
+        # SOCKET_IO_PORT: 9001
+        # MONGODB_URI: mongodb://localhost:27017/your_local_db
+        # REDIS_HOST: 127.0.0.1
+        # REDIS_PORT: 6379
+      ports: 
+        - '${PORT}:${PORT}'
+      # links:
+      #   - redis
+
+    redis:
+      image: "redis:alpine"
+      ports:
+        - '6379:6379'
+    mongo:
+      image: mongo:latest
+      ports:
+        - "27017:27017"
+

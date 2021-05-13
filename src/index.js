@@ -33,6 +33,8 @@ import { whiteList } from './utils/consts';
  * Socket.IO then listen to a new HTTP Server with a different port.
  */
 import './socket.io/server';
+import gameRouter from './routes/game.routes';
+import heartbeatRouter from './routes/heartbeat.routes';
 
 const domain = process.env.DOMAIN || 'localhost';
 const port = process.env.PORT || 8000;
@@ -147,6 +149,12 @@ app.get('/greeting', (req, res) => {
 app.get('/ioclient', (req, res) => {
   res.sendFile(path.join(process.cwd() + '/public/testioclient.html'));
 });
+
+/**
+ * Defining HTTP Endpoint Routes
+ */
+app.use('/api/v1/game', gameRouter);
+app.use('/api/v1/heartbeat', heartbeatRouter);
 
 /**
  * Set port, listen for requests

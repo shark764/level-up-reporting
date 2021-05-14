@@ -5,7 +5,7 @@ export const hitSchema = new Schema(
     // Unique identifier for the device.
     deviceId: {
       type: Schema.Types.ObjectId,
-      ref: 'Game',
+      ref: 'devices',
       required: true,
     },
     gameId: {

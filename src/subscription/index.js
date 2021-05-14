@@ -1,17 +1,16 @@
 import { PubSub } from 'apollo-server-express';
-import * as GAME_EVENTS from './Game';
-import * as PLAYER_EVENTS from './Player';
-import * as HIT_EVENTS from './Hit';
+import * as GAME_EVENTS from './game';
+import * as USER_EVENTS from './user';
+import * as HIT_EVENTS from './hit';
 
 export const EVENTS = {
   GAME: GAME_EVENTS,
-  PLAYER: PLAYER_EVENTS,
+  USER: USER_EVENTS,
   HIT: HIT_EVENTS,
 };
 
 export const subscriptionResolver = (event) => ({
-  subscribe: (parent, args, context, info) =>
-    context.pubsub.asyncIterator(event),
+  subscribe: (parent, args, context) => context.pubsub.asyncIterator(event),
   resolve: (payload) => payload,
 });
 

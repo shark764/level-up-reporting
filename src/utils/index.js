@@ -1,3 +1,5 @@
+import { datatype, date } from 'faker';
+
 export const apolloPath = '/reporting-bff-graphql';
 export const socketIOPath = '/reporting-bff-socket.io';
 
@@ -28,3 +30,15 @@ export function log(type, msg, ...args) {
       break;
   }
 }
+
+export const generateHit = (clientId, gameId) => ({
+  clientId,
+  gameId,
+  deviceId: datatype.uuid(),
+  userId: datatype.uuid(),
+  value1: datatype.number(),
+  value2: datatype.number(),
+  value3: datatype.number(),
+  value4: datatype.number(),
+  time: date.recent(),
+});

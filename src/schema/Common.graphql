@@ -1,6 +1,0 @@
-scalar DateTime
-
-enum Sort {
-  asc
-  desc
-}

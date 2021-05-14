@@ -9,6 +9,6 @@ const router = Router();
 router.use(timeLog);
 
 // Finish Game
-router.post('/finish-game/:id', authorization, finishGame);
+router.delete('/:id', authorization, finishGame);
 
 export default router;

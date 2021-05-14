@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import { Server } from 'socket.io';
-import { models } from '../models';
-import pubsub, { EVENTS } from '../subscription';
-import { getRoomByClientType, log, socketIOPath } from '../utils';
-import { whiteList } from '../utils/consts';
+import { models } from '../../models';
+import pubsub, { EVENTS } from '../../subscription';
+import { getRoomByClientType, log, socketIOPath } from '../../utils';
+import { whiteList } from '../../utils/consts';
 
-import { sadd, smembers } from '../redis';
+import { sadd, smembers } from '../../redis';
 
 import * as IO_EVENTS from './events';
 
@@ -59,21 +59,21 @@ ioServer.on('connection', (socket) => {
   /**
    * Handle when socket client sends data
    */
-  socket.on('_game_running-test-data', (data, callback) => {
+  socket.on('_game_running-test-data', (data) => {
     console.log('_game_running-test-data', data);
     socket.emit('_game_event-hit', { data });
   });
 
-  socket.on(IO_EVENTS.START_GAME, async (data, callback) => {
+  socket.on(IO_EVENTS.START_GAME, async (data) => {
     if (!isProduction) {
       log('info', `\nMessage received from gateway`, data);
     }
     const { payload, ...metadata } = data;
-    const { game, player } = payload;
+    const { game, user } = payload;
     const newGame = await models.Game.create({ name: game.name });
     pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
-    const newPlayer = await models.Player.create({ name: player.name });
-    pubsub.publish(EVENTS.PLAYER.PLAYER_CREATED, newPlayer);
+    const newPlayer = await models.User.create({ name: user.name });
+    pubsub.publish(EVENTS.USER.USER_CREATED, newPlayer);
 
     const result = { id: newGame._id, data: newGame };
     const response = {
@@ -86,7 +86,7 @@ ioServer.on('connection', (socket) => {
     ioServer.to('web-clients').emit(IO_EVENTS.GAME_STARTED, result);
   });
 
-  socket.on(IO_EVENTS.TARGET_HIT, (data, callback) => {
+  socket.on(IO_EVENTS.TARGET_HIT, (data) => {
     if (!isProduction) {
       log('info', `\nMessage received from gateway`, data);
     }
@@ -105,7 +105,7 @@ ioServer.on('connection', (socket) => {
     ioServer.to('web-clients').emit(IO_EVENTS.TARGET_HIT, result);
   });
 
-  socket.on(IO_EVENTS.FINISH_GAME, (data, callback) => {
+  socket.on(IO_EVENTS.FINISH_GAME, (data) => {
     if (!isProduction) {
       log('info', `\nMessage received from gateway`, data);
     }

@@ -1,6 +1,6 @@
 import { subscriptionResolver, EVENTS } from '../subscription';
 
-export default {
+export const hit = {
   Query: {
     getHits: async (parent, args, { models }) => await models.Hit.find(),
     getHit: async (parent, { id }, { models }) => await models.Hit.findById(id),
@@ -25,8 +25,8 @@ export default {
     },
   },
   Hit: {
-    /*player: async (parent, args, { models }) =>
-      await models.Player.findById(parent.player),*/
+    /*user: async (parent, args, { models }) =>
+      await models.User.findById(parent.user),*/
     game: async (parent, args, { models }) =>
       await models.Game.findById(parent.gameId),
   },

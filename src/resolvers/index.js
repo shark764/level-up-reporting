@@ -1,10 +1,10 @@
-import { join } from 'path';
-import { mergeResolvers } from '@graphql-tools/merge';
-import { loadFilesSync } from '@graphql-tools/load-files';
+import { merge } from 'lodash';
 
-const resolversArray = loadFilesSync(join(__dirname, '.'), {
-  extensions: ['js'],
-  ignoreIndex: true,
-});
+import { shared } from './shared';
+import { game } from './game';
+import { hit } from './hit';
+import { user } from './user';
 
-export default mergeResolvers(resolversArray);
+const resolvers = merge(shared, game, hit, user);
+
+export default resolvers;

@@ -6,6 +6,6 @@ export function timeLog(req, res, next) {
 }
 
 export function authorization(req, res, next) {
-  log('warning', "I will let you pass, don't worry...");
+  log('warning', "I will let you pass, don't worry dude...");
   next();
 }

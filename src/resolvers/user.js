@@ -1,4 +1,4 @@
-export default {
+export const user = {
   Query: {
     getUsers: async (parent, args, { models }) => await models.User.find(),
     getUser: async (parent, { id }, { models }) =>
@@ -13,9 +13,7 @@ export default {
     },
   },
   User: {
-    messages: async (parent, args, { models }) =>
-      await models.Message.find({ user: parent.id }),
-    tasks: async (parent, args, { models }) =>
-      await models.Task.find({ user: parent.id }),
+    hits: async (parent, args, { models }) =>
+      await models.Hit.find({ user: parent.id }),
   },
 };

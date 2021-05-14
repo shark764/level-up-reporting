@@ -1,6 +1,6 @@
 import { subscriptionResolver, EVENTS } from '../subscription';
 
-export default {
+export const game = {
   Query: {
     getGames: async (parent, args, { models }) => await models.Game.find(),
     getGame: async (parent, { id }, { models }) =>

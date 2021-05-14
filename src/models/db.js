@@ -4,12 +4,7 @@ import { log } from '../utils';
 
 mongoose.Promise = global.Promise;
 
-const isProduction = process.env.NODE_ENV === 'production';
-const DB_CONNECTION_URI = isProduction
-  ? process.env.DB_CONNECTION_URI
-  : process.env.DEV_DB_CONNECTION_URI;
-
-const connection = mongoose.connect(DB_CONNECTION_URI, {
+const connection = mongoose.connect(process.env.DB_CONNECTION_STRING, {
   autoIndex: true,
   poolSize: 50,
   bufferMaxEntries: 0,
@@ -27,7 +22,7 @@ connection
     log(
       'success',
       `\nConnected to mongodb database ....`,
-      `\n\tString connection: ${DB_CONNECTION_URI}`,
+      `\n\tString connection: ${process.env.DB_CONNECTION_STRING}`,
       `\n\tStarting timestamp: ${new Date()}`
     );
     return db;

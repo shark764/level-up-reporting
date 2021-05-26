@@ -27,8 +27,8 @@ before_script:
 build:
   stage: build
   script:
-    - docker build -t lul-reporting .
+    - docker build -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting .
     - mkdir ~/.docker
     - cat $DOCKER_CREDS > ~/.docker/config.json    
-    - docker login registry.digitalocean.com
-    - docker push lul-registry/lul-reporting
+    - docker login DOCKER_REGISTRY_URL
+    - docker push DOCKER_REGISTRY_URL/lul-registry/lul-reporting

@@ -31,4 +31,4 @@ build:
     - mkdir ~/.docker
     - cat $DOCKER_CREDS > ~/.docker/config.json    
     - docker login registry.digitalocean.com
-    - docker push lul-reporting
+    - docker push lul-registry/lul-reporting

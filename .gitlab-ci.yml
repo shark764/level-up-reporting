@@ -30,5 +30,5 @@ build:
     - docker build -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting .
     - mkdir ~/.docker
     - cat $DOCKER_CREDS > ~/.docker/config.json    
-    - docker login DOCKER_REGISTRY_URL
-    - docker push DOCKER_REGISTRY_URL/lul-registry/lul-reporting
+    - docker login $DOCKER_REGISTRY_URL
+    - docker push $DOCKER_REGISTRY_URL/lul-registry/lul-reporting

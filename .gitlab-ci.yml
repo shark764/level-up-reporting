@@ -1,3 +1,7 @@
+stages :
+  - build 
+  - deploy
+
 image: docker:19.03.12
 
 variables:
@@ -32,3 +36,12 @@ build:
     - cat $DOCKER_CREDS > ~/.docker/config.json    
     - docker login $DOCKER_REGISTRY_URL
     - docker push $DOCKER_REGISTRY_URL/lul-registry/lul-reporting 
+
+deploy_review:
+    stage: deploy
+    image: devth/helm
+    script:
+        - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
+        - cd lul-infra/charts/lul-reporting
+        - init_helm
+        - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml

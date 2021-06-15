@@ -43,5 +43,4 @@ deploy_review:
     script:
         - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
         - cd lul-infra/charts
-        - init_helm
         - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml

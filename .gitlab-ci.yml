@@ -25,8 +25,8 @@ variables:
 services:
   - docker:19.03.12-dind
 
-before_script:
-  - docker info
+# before_script:
+#   - docker info
 
 build:
   stage: build
@@ -42,6 +42,6 @@ deploy_review:
     image: devth/helm
     script:
         - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
-        - cd lul-infra/charts/lul-reporting
+        - cd lul-infra/charts
         - init_helm
         - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml

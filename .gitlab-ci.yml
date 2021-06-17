@@ -37,12 +37,26 @@ build:
     - docker login $DOCKER_REGISTRY_URL
     - docker push $DOCKER_REGISTRY_URL/lul-registry/lul-reporting 
 
-deploy_review:
+deploy_dev:
     stage: deploy
     image: devth/helm
     script:
-        - $KUBECONFIG_file > kubeconfig
+        - cat $KUBECONFIG_file > kubeconfig
         - export KUBECONFIG=kubeconfig
         - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
         - cd lul-infra/charts
         - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml
+
+
+
+# for other enviroment you can copy deploy_ step and do pretty much the same with the different namespace or cluster.
+
+# deploy_prd:
+#     stage: deploy
+#     image: devth/helm
+#     script:
+#         - cat $KUBECONFIG_file > kubeconfig
+#         - export KUBECONFIG=kubeconfig
+#         - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
+#         - cd lul-infra/charts
+#         - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml

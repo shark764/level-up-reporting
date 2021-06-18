@@ -41,7 +41,7 @@ deploy_dev:
     stage: deploy
     image: devth/helm
     script:
-        - cat $KUBECONFIG_file > kubeconfig
+        - echo $KUBECONFIG_file > kubeconfig
         - export KUBECONFIG=kubeconfig
         - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
         - cd lul-infra/charts

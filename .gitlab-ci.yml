@@ -29,6 +29,8 @@ services:
 #   - docker info
 
 build:
+  only : 
+    - master
   stage: build
   script:
     - docker build -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting:$CI_COMMIT_SHORT_SHA .
@@ -38,13 +40,15 @@ build:
     - docker push $DOCKER_REGISTRY_URL/lul-registry/lul-reporting 
 
 deploy_dev:
-    stage: deploy
-    image: devth/helm
-    script:
-        - export KUBECONFIG=$KUBECONFIG_file 
-        - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
-        - cd lul-infra/charts
-        - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml
+  only : 
+    - master
+  stage: deploy
+  image: devth/helm
+  script:
+      - export KUBECONFIG=$KUBECONFIG_file 
+      - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
+      - cd lul-infra/charts
+      - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml
 
 
 

@@ -4,6 +4,7 @@ import { error } from '../utils/response';
 export const validateTokenAlive = (req, res, next) => {
   const { accessToken, user_id } = req;
   const key = `{${user_id}}{SESSION}{${accessToken}}`;
+
   getRefreshTokenValue(key, (err, value) => {
     if (err) {
       return res

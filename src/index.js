@@ -5,6 +5,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
 import addRequestId from 'express-request-id';
 import mongoose from 'mongoose';
+import logger from 'morgan';
 
 /**
  * Connects to database
@@ -51,6 +52,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 const app = express();
 
 app.use(addRequestId());
+if (process.env.NODE_ENV === 'development') {
+  app.use(logger('dev'));
+}
 
 /**
  * Restricting access to server using a whitelist

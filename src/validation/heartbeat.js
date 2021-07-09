@@ -34,7 +34,9 @@ export const validator = [
       log('error', 'Errors were encountered in request body');
       return res
         .status(400)
-        .json(error({ requestId: req.id, code: 400, errors: errors.array() }));
+        .json(
+          error({ requestId: req.id, code: 400 /* errors: errors.array() */ })
+        );
     }
     next();
   },

@@ -11,7 +11,7 @@ import logger from 'morgan';
  * Connects to database
  */
 import './models/db';
-import { models } from './models';
+import { models } from './models/schemas';
 /**
  * schema contains typeDefs
  * for Apollo Server
@@ -161,11 +161,11 @@ httpServer.listen({ port }, () => {
   log(
     'success',
     `\nHTTP Server listening on port ${port} ....`,
-    `\n\tGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
-    `\n\tSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
+    `\nGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
+    `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
     !isProduction
-      ? `\n\tRun Graphql Playground at http://${domain}:${port}${apolloPath}`
+      ? `\nRun Graphql Playground at http://${domain}:${port}${apolloPath}`
       : '',
-    `\n\tStarting timestamp: ${new Date()}`
+    `\nStarting timestamp: ${new Date()}`
   );
 });

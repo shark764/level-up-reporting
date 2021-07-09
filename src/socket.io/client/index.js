@@ -24,9 +24,9 @@ socketGameController.on('connect', () => {
   log(
     'success',
     `\nSocket.IO Client active and listening on port ${gcPort} ....`,
-    `\n\tGame Controller client accepting messages from: ${gcUri}`,
-    `\n\tSocket open: ${socketGameController.id}`,
-    `\n\tStarting timestamp: ${new Date()}`
+    `\nGame Controller client accepting messages from: ${gcUri}`,
+    `\nSocket open: ${socketGameController.id}`,
+    `\nStarting timestamp: ${new Date()}`
   );
 });
 
@@ -42,9 +42,9 @@ socketReportingBFF.on('connect', () => {
   log(
     'success',
     `\nSocket.IO Client active and listening on port ${rpbffPort} ....`,
-    `\n\tReporting BFF client accepting messages from: ${rpbffUri}`,
-    `\n\tSocket open: ${socketReportingBFF.id}`,
-    `\n\tStarting timestamp: ${new Date()}`
+    `\nReporting BFF client accepting messages from: ${rpbffUri}`,
+    `\nSocket open: ${socketReportingBFF.id}`,
+    `\nStarting timestamp: ${new Date()}`
   );
 });
 

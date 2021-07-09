@@ -5,7 +5,7 @@ export const success = (args) => ({
 });
 
 export const errorCodeMap = {
-  400: 'LUL-REP000 - Bad request check body/params',
+  400: 'LUL-REP000 - Errors were encountered in request body',
   401: 'LUL-REP001 - Authentication required',
   403: 'LUL-REP003 - Forbidden Action',
   404: 'LUL-REP004 - Not found',
@@ -22,7 +22,7 @@ export const error = (args) => {
     error: {
       code,
       message,
-      errors,
+      // errors,
     },
   };
 };

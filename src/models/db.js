@@ -22,8 +22,8 @@ connection
     log(
       'success',
       `\nConnected to mongodb database ....`,
-      `\n\tString connection: ${process.env.DB_CONNECTION_STRING}`,
-      `\n\tStarting timestamp: ${new Date()}`
+      `\nString connection: ${process.env.DB_CONNECTION_STRING}`,
+      `\nStarting timestamp: ${new Date()}`
     );
     return db;
   })

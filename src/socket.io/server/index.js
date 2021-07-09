@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { Server } from 'socket.io';
-import { models } from '../../models';
+import { models } from '../../models/schemas';
 import pubsub, { EVENTS } from '../../subscription';
 import { getRoomByClientType, log, socketIOPath } from '../../utils';
 import { whiteList } from '../../utils/consts';
@@ -42,8 +42,8 @@ const ioServer = new Server(port, {
 log(
   'success',
   `\nSocket.IO Server accepting connections at port ${port} ....`,
-  `\n\tSocket open at: http://${domain}:${port}${socketIOPath}`,
-  `\n\tStarting timestamp: ${new Date()}`
+  `\nSocket open at: http://${domain}:${port}${socketIOPath}`,
+  `\nStarting timestamp: ${new Date()}`
 );
 
 ioServer.on('connection', (socket) => {

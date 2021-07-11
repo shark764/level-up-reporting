@@ -13,7 +13,7 @@ export const errorCodeMap = {
 };
 
 export const error = (args) => {
-  const { code, errors, requestId } = args;
+  const { code, requestId } = args;
   const message = args.message || errorCodeMap[code] || 'Server Error';
 
   return {

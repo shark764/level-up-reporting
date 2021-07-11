@@ -26,17 +26,19 @@ export const validator = [
     .withMessage('Software version must be at least 3 chars long'),
   check('devices', 'Devices list is required').exists(),
   check('devices', 'Devices list is empty').custom(
-    (value, { req }) => Array.isArray(value) && value.length
+    (value) => Array.isArray(value) && value.length
   ),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       log('error', 'Errors were encountered in request body');
-      return res
-        .status(400)
-        .json(
-          error({ requestId: req.id, code: 400 /* errors: errors.array() */ })
-        );
+      return res.status(400).json(
+        error({
+          requestId: req.id,
+          code: 400,
+          // errors: errors.array(),
+        })
+      );
     }
     next();
   },

@@ -4,49 +4,31 @@ import { log } from '../../utils';
 import { getClientOptions } from '../../utils/consts';
 import { EVENTS } from './events';
 
-const domain = process.env.DOMAIN || 'localhost';
-const gcPort = process.env.GAME_CONTROLLER_PORT || 8001;
-const rpbffPort = process.env.REPORTING_BFF_PORT || 8001;
-const isProduction = process.env.NODE_ENV === 'production';
-// const gcUri = `http://${domain}:${gcPort}`;
-const gcUri = `https://level-up-game-controller.herokuapp.com/`;
-const rpbffUri = `http://${domain}:${rpbffPort}`;
+const gameControllerPort = process.env.GAME_CONTROLLER_PORT || 3012;
+const reportingPort = process.env.REPORTING_PORT || 3010;
+const isDevEnvironment = process.env.NODE_ENV === 'development';
+
+const gameControllerUri = process.env.GAME_CONTROLLER_URI;
+const reportingUri = process.env.REPORTING_URI;
 
 /**
  * GAME CONTROLLER CLIENT
- * path = /game-controller-socket.io
+ * path = /game-controller-server
  * query
  *    type = gateway-server
  */
-const socketGameController = io(gcUri, getClientOptions('game-controller'));
-socketGameController.connect();
-socketGameController.on('connect', () => {
-  log(
-    'success',
-    `\nSocket.IO Client active and listening on port ${gcPort} ....`,
-    `\nGame Controller client accepting messages from: ${gcUri}`,
-    `\nSocket open: ${socketGameController.id}`,
-    `\nStarting timestamp: ${new Date()}`
-  );
-});
+const gameControllerClient = io(
+  gameControllerUri,
+  getClientOptions('game-controller')
+);
 
 /**
  * REPORTING BFF CLIENT
- * path = /reporting-bff-socket.io
+ * path = /reporting-server
  * query
  *    type = gateway-server
  */
-const socketReportingBFF = io(rpbffUri, getClientOptions('reporting-bff'));
-socketReportingBFF.connect();
-socketReportingBFF.on('connect', () => {
-  log(
-    'success',
-    `\nSocket.IO Client active and listening on port ${rpbffPort} ....`,
-    `\nReporting BFF client accepting messages from: ${rpbffUri}`,
-    `\nSocket open: ${socketReportingBFF.id}`,
-    `\nStarting timestamp: ${new Date()}`
-  );
-});
+const reportingClient = io(reportingUri, getClientOptions('reporting-bff'));
 
 /**
  * ******************************
@@ -54,74 +36,114 @@ socketReportingBFF.on('connect', () => {
  * GAME-CONTROLLER SERVER
  * ******************************
  */
-const gcEventsHandler = (args, message, callback) => {
-  if (!isProduction) {
-    log('info', `\nMessage received from game-controller server`, message);
+const gameControllerEventsHandler = (args, message) => {
+  if (isDevEnvironment) {
+    log('info', `\nMessage received from game-controller server`);
   }
   /**
    * Formatting new event with extra data
    */
-  const fwMessage = {
+  const forwardedMessage = {
     'event-received': args.eventReceived,
     'event-emitted': args.eventEmitted,
-    'game-controller-socket-id': socketGameController.id,
-    'reporting-bff-socket-id': socketReportingBFF.id,
+    'origin-socket-id': gameControllerClient.id,
+    'target-socket-id': reportingClient.id,
     timestamp: new Date(),
     /**
      * Message comming from game-controller
      */
-    ...message,
+    data: message ?? {},
   };
+  if (isDevEnvironment) {
+    console.table([forwardedMessage]);
+  }
   /**
    * Forward event to reporting-bff
    */
-  socketReportingBFF.emit(args.eventEmitted, fwMessage);
-  if (!isProduction) {
-    log('info', `\nMessage forwarded to reporting-bff server`, fwMessage);
+  reportingClient.emit(args.eventEmitted, forwardedMessage);
+  if (isDevEnvironment) {
+    log('info', `\nMessage forwarded to reporting-bff server`);
   }
 
   /**
    * Callback from game-controller
    */
 
-  // callback && callback({ data: { ...fwMessage } });
+  // callback && callback({ data: { ...forwardedMessage } });
 };
 
-/**
- * Start Game
- * We emit the signal to reporting bff so it registers a new game
- */
-socketGameController.on(
-  EVENTS.GAME_CONTROLLER.START_GAME,
-  gcEventsHandler.bind(null, {
-    eventReceived: EVENTS.GAME_CONTROLLER.START_GAME,
-    eventEmitted: EVENTS.REPORTING_BFF.START_GAME,
-  })
-);
+const runGameControllerClient = () => {
+  gameControllerClient.connect();
+  gameControllerClient.on('connect', () => {
+    if (isDevEnvironment) {
+      console.table([
+        {
+          Server: 'Game Controller',
+          Port: gameControllerPort,
+          'Accepting on': gameControllerUri,
+          socket: gameControllerClient.id,
+          Started: new Date(),
+        },
+      ]);
+    }
+  });
+  gameControllerClient.on('disconnect', (reason) => {
+    if (isDevEnvironment) {
+      log('warning', `Client gone [id=${gameControllerClient.id}]`, reason);
+    }
+  });
 
-/**
- * Target Hit
- * We emit the signal to reporting bff so it registers a target hit
- */
-socketGameController.on(
-  EVENTS.GAME_CONTROLLER.TARGET_HIT,
-  gcEventsHandler.bind(null, {
-    eventReceived: EVENTS.GAME_CONTROLLER.TARGET_HIT,
-    eventEmitted: EVENTS.REPORTING_BFF.TARGET_HIT,
-  })
-);
+  /**
+   * Update devices context
+   * We emit the signal to reporting bff so it performs
+   * update actions on devices
+   */
+  gameControllerClient.on(
+    EVENTS.GAME_CONTROLLER.DEVICES_CONTEXT_UPDATE,
+    gameControllerEventsHandler.bind(null, {
+      eventReceived: EVENTS.GAME_CONTROLLER.DEVICES_CONTEXT_UPDATE,
+      eventEmitted: EVENTS.REPORTING.DEVICES_CONTEXT_UPDATE,
+    })
+  );
 
-/**
- * Finish Game
- * We emit the signal to reporting bff so it registers a target hit
- */
-socketGameController.on(
-  EVENTS.GAME_CONTROLLER.FINISH_GAME,
-  gcEventsHandler.bind(null, {
-    eventReceived: EVENTS.GAME_CONTROLLER.FINISH_GAME,
-    eventEmitted: EVENTS.REPORTING_BFF.FINISH_GAME,
-  })
-);
+  /**
+   * Target Hit
+   * We emit the signal to reporting bff so it registers a target hit
+   */
+  gameControllerClient.on(
+    EVENTS.GAME_CONTROLLER.TARGET_HIT,
+    gameControllerEventsHandler.bind(null, {
+      eventReceived: EVENTS.GAME_CONTROLLER.TARGET_HIT,
+      eventEmitted: EVENTS.REPORTING.TARGET_HIT,
+    })
+  );
+
+  /**
+   * Target Update
+   * We emit the signal to reporting bff so it performs
+   * target update actions
+   */
+  gameControllerClient.on(
+    EVENTS.GAME_CONTROLLER.TARGET_UPDATE,
+    gameControllerEventsHandler.bind(null, {
+      eventReceived: EVENTS.GAME_CONTROLLER.TARGET_UPDATE,
+      eventEmitted: EVENTS.REPORTING.TARGET_UPDATE,
+    })
+  );
+
+  /**
+   * Target Update
+   * We emit the signal to reporting bff so it performs
+   * target update actions
+   */
+  gameControllerClient.on(
+    EVENTS.GAME_CONTROLLER.DISPLAY_UPDATE,
+    gameControllerEventsHandler.bind(null, {
+      eventReceived: EVENTS.GAME_CONTROLLER.DISPLAY_UPDATE,
+      eventEmitted: EVENTS.REPORTING.DISPLAY_UPDATE,
+    })
+  );
+};
 
 /**
  * ******************************
@@ -129,73 +151,118 @@ socketGameController.on(
  * REPORTING-BFF SERVER
  * ******************************
  */
-
-const rpbffEventsHandler = (args, message, callback) => {
-  if (!isProduction) {
-    log('info', `\nMessage received from reporting-bff server`, message);
+const reportingEventsHandler = (args, message) => {
+  if (isDevEnvironment) {
+    log('info', `\nMessage received from reporting-bff server`);
   }
   /**
    * Formatting new event with extra data
    */
-  const fwMessage = {
+  const forwardedMessage = {
     'event-received': args.eventReceived,
     'event-emitted': args.eventEmitted,
-    'game-controller-socket-id': socketGameController.id,
-    'reporting-bff-socket-id': socketReportingBFF.id,
+    'origin-socket-id': reportingClient.id,
+    'target-socket-id': gameControllerClient.id,
     timestamp: new Date(),
     /**
      * Message comming from reporting-bff
      */
-    ...message,
+    data: message ?? {},
   };
+  if (isDevEnvironment) {
+    console.table([forwardedMessage]);
+  }
   /**
    * Forward event to game-controller
    */
-  socketGameController.emit(args.eventEmitted, fwMessage);
-  if (!isProduction) {
-    log('info', `\nMessage forwarded to game-controller server`, fwMessage);
+  gameControllerClient.emit(args.eventEmitted, forwardedMessage);
+  if (isDevEnvironment) {
+    log('info', `\nMessage forwarded to game-controller server`);
+    console.table([forwardedMessage]);
   }
 
   /**
    * Callback from reporting-bff
    */
 
-  // callback && callback({ data: { ...fwMessage } });
+  // callback && callback({ data: { ...forwardedMessage } });
 };
 
-/**
- * Game Started
- * Reporting BFF emits a signal when a game has been created
- */
-socketReportingBFF.on(
-  EVENTS.REPORTING_BFF.GAME_STARTED,
-  rpbffEventsHandler.bind(null, {
-    eventReceived: EVENTS.REPORTING_BFF.GAME_STARTED,
-    eventEmitted: EVENTS.GAME_CONTROLLER.GAME_STARTED,
-  })
-);
+const runReportingClient = () => {
+  reportingClient.connect();
+  reportingClient.on('connect', () => {
+    if (isDevEnvironment) {
+      console.table([
+        {
+          Server: 'Reporting BFF',
+          Port: reportingPort,
+          'Accepting on': reportingUri,
+          socket: reportingClient.id,
+          Started: new Date(),
+        },
+      ]);
+    }
+  });
+  reportingClient.on('disconnect', (reason) => {
+    if (isDevEnvironment) {
+      log('warning', `Client gone [id=${reportingClient.id}]`, reason);
+    }
+  });
 
-/**
- * Target Hit Registered
- * Reporting BFF emits a signal when a target-hit was receibed
- */
-socketReportingBFF.on(
-  EVENTS.REPORTING_BFF.TARGET_HIT,
-  rpbffEventsHandler.bind(null, {
-    eventReceived: EVENTS.REPORTING_BFF.TARGET_HIT,
-    eventEmitted: EVENTS.GAME_CONTROLLER.TARGET_HIT,
-  })
-);
+  /**
+   * 2.4 ) Game application sets CONFIG for smart target device
+   */
+  reportingClient.on(
+    EVENTS.REPORTING.SET_DEVICE_CONFIG,
+    reportingEventsHandler.bind(null, {
+      eventReceived: EVENTS.REPORTING.SET_DEVICE_CONFIG,
+      eventEmitted: EVENTS.GAME_CONTROLLER.SET_DEVICE_CONFIG,
+    })
+  );
 
-/**
- * Game Finished
- * Reporting BFF emits a signal when a game was finished
- * and hits were inserted in database
- */
-socketReportingBFF.on(
-  EVENTS.REPORTING_BFF.GAME_FINISHED,
-  rpbffEventsHandler.bind(null, {
-    eventReceived: EVENTS.REPORTING_BFF.GAME_FINISHED,
-    eventEmitted: EVENTS.GAME_CONTROLLER.GAME_FINISHED,
-  })
-);
+  /**
+   * 2.5 ) Game application sets behavior MODE for smart target device
+   */
+  reportingClient.on(
+    EVENTS.REPORTING.SET_DEVICE_MODE,
+    reportingEventsHandler.bind(null, {
+      eventReceived: EVENTS.REPORTING.SET_DEVICE_MODE,
+      eventEmitted: EVENTS.GAME_CONTROLLER.SET_DEVICE_MODE,
+    })
+  );
+
+  /**
+   * 2.6 ) Game application sends START event to a smart target device
+   */
+  reportingClient.on(
+    EVENTS.REPORTING.START_DEVICE,
+    reportingEventsHandler.bind(null, {
+      eventReceived: EVENTS.REPORTING.START_DEVICE,
+      eventEmitted: EVENTS.GAME_CONTROLLER.START_DEVICE,
+    })
+  );
+
+  /**
+   * 2.7 ) Game application requests for latest STATUS update from a smart target device
+   */
+  reportingClient.on(
+    EVENTS.REPORTING.PING,
+    reportingEventsHandler.bind(null, {
+      eventReceived: EVENTS.REPORTING.PING,
+      eventEmitted: EVENTS.GAME_CONTROLLER.PING,
+    })
+  );
+};
+
+const run = () => {
+  runGameControllerClient();
+  runReportingClient();
+};
+
+export default {
+  gameControllerClient,
+  reportingClient,
+  runGameControllerClient,
+  runReportingClient,
+  run,
+};

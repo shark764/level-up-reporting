@@ -7,19 +7,15 @@ export const whiteList = [
   'https://react-socket-io-client-1.netlify.app',
 ];
 
-export const gcSocketIOPath = '/game-controller-socket.io';
+export const gameControllerPath = process.env.GAME_CONTROLLER_PATH;
 
-export const rpbffSocketIOPath = '/reporting-bff-socket.io';
-
-// eslint-disable-next-line max-len
-export const socketToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+export const reportingPath = process.env.REPORTING_PATH;
 
 export const defaultOptions = {
   reconnectionDelayMax: 10000,
   withCredentials: true,
   extraHeaders: {
-    'levelup-token-header': socketToken,
+    'levelup-token-header': 'levelup-token-header-value',
   },
   query: {
     type: 'gateway-server',
@@ -28,11 +24,11 @@ export const defaultOptions = {
 export const clientOptions = {
   'game-controller': {
     ...defaultOptions,
-    path: gcSocketIOPath,
+    path: gameControllerPath,
   },
   'reporting-bff': {
     ...defaultOptions,
-    path: rpbffSocketIOPath,
+    path: reportingPath,
   },
 };
 export const getClientOptions = (type = 'reporting-bff') =>

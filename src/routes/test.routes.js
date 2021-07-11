@@ -1,13 +1,10 @@
 import 'dotenv/config';
 import path from 'path';
 import { Router } from 'express';
-import { authorization, timeLog } from '../controllers/general.controller';
+import { authorization } from '../controllers/general.controller';
 
 // Express route
 const router = Router();
-
-// Apply timeLog middleware
-router.use(timeLog);
 
 /**
  * Define the first route

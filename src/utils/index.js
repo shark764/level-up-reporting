@@ -1,7 +1,7 @@
 import { datatype, date } from 'faker';
 
 export const apolloPath = '/reporting-bff-graphql';
-export const socketIOPath = '/reporting-bff-socket.io';
+export const socketIOPath = '/reporting-server';
 
 const rooms = {
   'gateway-server': 'gateway-servers',

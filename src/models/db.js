@@ -4,31 +4,33 @@ import { log } from '../utils';
 
 mongoose.Promise = global.Promise;
 
-const connection = mongoose.connect(process.env.DB_CONNECTION_STRING, {
-  autoIndex: true,
-  poolSize: 50,
-  bufferMaxEntries: 0,
-  keepAlive: 120,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-  useCreateIndex: true,
-});
-
 mongoose.set('useCreateIndex', true);
 
-connection
-  .then((db) => {
+let connection;
+
+async function connect() {
+  try {
+    connection = await mongoose.connect(process.env.DB_CONNECTION_STRING, {
+      autoIndex: true,
+      poolSize: 50,
+      bufferMaxEntries: 0,
+      keepAlive: 120,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
     log(
       'success',
       `\nConnected to mongodb database ....`,
       `\nString connection: ${process.env.DB_CONNECTION_STRING}`,
       `\nStarting timestamp: ${new Date()}`
     );
-    return db;
-  })
-  .catch((err) => {
-    log('error', `Cannot connect to the database...`, err);
+    return connection;
+  } catch (error) {
+    log('error', `Cannot connect to the database...`, error);
     process.exit();
-  });
-export default connection;
+  }
+}
+
+export default { connect, connection };

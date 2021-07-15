@@ -1,5 +1,5 @@
-import { getRefreshTokenValue } from '../redis';
-import { error } from '../utils/response';
+import { getRefreshTokenValue } from '../../redis';
+import { error } from '../../utils/response';
 
 export const validateTokenAlive = (req, res, next) => {
   const { accessToken, user_id } = req;

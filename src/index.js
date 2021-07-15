@@ -10,7 +10,7 @@ import logger from 'morgan';
 /**
  * Connects to database
  */
-import './models/db';
+import database from './models/db';
 import { models } from './models/schemas';
 /**
  * schema contains typeDefs
@@ -31,12 +31,8 @@ import { whiteList } from './utils/consts';
  * We need this since Apollo is already using HTTP Server previously configured.
  * Socket.IO then listen to a new HTTP Server with a different port.
  */
-import './socket.io/server';
-/**
- * TODO:
- *  Test moving game-controller-gateway back to reporting-bff
- */
-// import './socket.io/client';
+import ioServer from './socket.io/server';
+import ioClient from './socket.io/client';
 
 /**
  * Import routes
@@ -45,15 +41,30 @@ import gameRouter from './routes/game.routes';
 import heartbeatRouter from './routes/heartbeat.routes';
 import testRouter from './routes/test.routes';
 
+/**
+ * Connect to database
+ */
+database.connect();
+
+/**
+ * Start Socket.IO server
+ */
+ioServer.run();
+/**
+ * Start Socket.IO client
+ */
+ioClient.run();
+
 const domain = process.env.DOMAIN || 'localhost';
-const port = process.env.PORT || 8000;
-const isProduction = process.env.NODE_ENV === 'production';
+const port = process.env.PORT || 3009;
+const isDevEnvironment = process.env.NODE_ENV === 'development';
 
 const app = express();
 
 app.use(addRequestId());
-if (process.env.NODE_ENV === 'development') {
+if (isDevEnvironment) {
   app.use(logger('dev'));
+  // Apply timeLog middleware
 }
 
 /**
@@ -95,11 +106,11 @@ const server = new ApolloServer({
     path: '/subscriptions',
     onConnect: () => {
       // connectionParams, webSocket, context
-      log('success', `\nClient connected to subscription service!`);
+      log('success', `\nClient connected to subscription service`);
     },
     onDisconnect: () => {
       // webSocket, context
-      log('error', `\nClient disconnected from subscription service!`);
+      log('error', `\nClient disconnected from subscription service`);
     },
   },
   context: {
@@ -107,7 +118,7 @@ const server = new ApolloServer({
     pubsub,
   },
   cors: true,
-  playground: !isProduction
+  playground: isDevEnvironment
     ? {
         endpoint: `http://${domain}:${port}${apolloPath}`,
         settings: {
@@ -150,8 +161,8 @@ server.installSubscriptionHandlers(httpServer);
 /**
  * Defining HTTP Endpoint Routes
  */
-app.use('/api/v1/game', gameRouter);
-app.use('/api/v1/heartbeat', heartbeatRouter);
+app.use('/api/v1', gameRouter);
+app.use('/api/v1', heartbeatRouter);
 app.use('/api/v1/tests', testRouter);
 
 /**
@@ -163,7 +174,7 @@ httpServer.listen({ port }, () => {
     `\nHTTP Server listening on port ${port} ....`,
     `\nGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
     `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
-    !isProduction
+    isDevEnvironment
       ? `\nRun Graphql Playground at http://${domain}:${port}${apolloPath}`
       : '',
     `\nStarting timestamp: ${new Date()}`

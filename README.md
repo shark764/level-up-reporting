@@ -27,7 +27,7 @@ Create a `.env` file with the following content
 ```bash
 NODE_ENV=development
 PORT=9000
-SOCKET_IO_PORT=9001
+IO_PORT=9001
 DEV_DB_CONNECTION_STRING=mongodb://localhost:27017/your_local_db
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379

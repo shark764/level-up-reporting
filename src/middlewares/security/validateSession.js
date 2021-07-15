@@ -1,5 +1,5 @@
 import { verify } from 'jsonwebtoken';
-import { error } from '../utils/response';
+import { error } from '../../utils/response';
 
 export const validateSession = (req, res, next) => {
   const { accessToken } = req;

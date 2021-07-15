@@ -7,11 +7,10 @@ import { whiteList } from '../../utils/consts';
 
 import { sadd, smembers } from '../../redis';
 
-import * as IO_EVENTS from './events';
+import { EVENTS as IO_EVENTS } from './events';
 
-const domain = process.env.DOMAIN || 'localhost';
-const port = process.env.SOCKET_IO_PORT || 8001;
-const isProduction = process.env.NODE_ENV === 'production';
+const port = process.env.IO_PORT || 3009;
+const isDevEnvironment = process.env.NODE_ENV === 'development';
 
 /**
  * Restricting access to server using a whitelist
@@ -26,7 +25,7 @@ const corsOptions = {
  * We need this since Apollo is already using HTTP Server previously configured.
  * Socket.IO then listen to a new HTTP Server with a different port.
  */
-const ioServer = new Server(port, {
+const socketServer = new Server(port, {
   path: socketIOPath,
   pingInterval: 10000,
   pingTimeout: 5000,
@@ -39,114 +38,304 @@ const ioServer = new Server(port, {
   },
 });
 
-log(
-  'success',
-  `\nSocket.IO Server accepting connections at port ${port} ....`,
-  `\nSocket open at: http://${domain}:${port}${socketIOPath}`,
-  `\nStarting timestamp: ${new Date()}`
-);
-
-ioServer.on('connection', (socket) => {
-  log('info', `\nClient connected [id=${socket.id}]`);
-
-  const { type } = socket.handshake.query;
-  const room = getRoomByClientType(type);
-  if (room) {
-    socket.join(room);
-    log('default', `Client joined room ${room} [id=${socket.id}]`);
+const run = () => {
+  if (isDevEnvironment) {
+    log(
+      'success',
+      `\nSocket.IO Server accepting connections at port ${port} ....`,
+      `\nStarting timestamp: ${new Date()}`
+    );
   }
 
-  /**
-   * Handle when socket client sends data
-   */
-  socket.on('_game_running-test-data', (data) => {
-    console.log('_game_running-test-data', data);
-    socket.emit('_game_event-hit', { data });
-  });
-
-  socket.on(IO_EVENTS.START_GAME, async (data) => {
-    if (!isProduction) {
-      log('info', `\nMessage received from gateway`, data);
-    }
-    const { payload, ...metadata } = data;
-    const { game, user } = payload;
-    const newGame = await models.Game.create({ name: game.name });
-    pubsub.publish(EVENTS.GAME.GAME_CREATED, newGame);
-    const newPlayer = await models.User.create({ name: user.name });
-    pubsub.publish(EVENTS.USER.USER_CREATED, newPlayer);
-
-    const result = { id: newGame._id, data: newGame };
-    const response = {
-      ...metadata,
-      timestamp: new Date(),
-      result,
-    };
-
-    socket.emit(IO_EVENTS.GAME_STARTED, response);
-    ioServer.to('web-clients').emit(IO_EVENTS.GAME_STARTED, result);
-  });
-
-  socket.on(IO_EVENTS.TARGET_HIT, (data) => {
-    if (!isProduction) {
-      log('info', `\nMessage received from gateway`, data);
-    }
-    const { payload, ...metadata } = data;
-    const { hit } = payload;
-    sadd(hit.gameId, JSON.stringify(hit));
-
-    const result = { gameId: hit.gameId, data: hit };
-    const response = {
-      ...metadata,
-      timestamp: new Date(),
-      result,
-    };
-
-    socket.emit(IO_EVENTS.TARGET_HIT, response);
-    ioServer.to('web-clients').emit(IO_EVENTS.TARGET_HIT, result);
-  });
-
-  socket.on(IO_EVENTS.FINISH_GAME, (data) => {
-    if (!isProduction) {
-      log('info', `\nMessage received from gateway`, data);
+  socketServer.on('connection', (socket) => {
+    if (isDevEnvironment) {
+      log('info', `\nClient connected [id=${socket.id}]`);
     }
 
-    const { payload, ...metadata } = data;
-    const { gameId } = payload;
-    smembers(gameId, (err, value) => {
-      if (err) {
-        log('error', err);
+    const { type } = socket.handshake.query;
+    const room = getRoomByClientType(type);
+    if (room) {
+      socket.join(room);
+      if (isDevEnvironment) {
+        log('default', `Client joined room ${room} [id=${socket.id}]`);
       }
-      const hits = value
-        .filter((hit) => hit.length > 0)
-        .map((hit) => JSON.parse(hit));
-      models.Hit.insertMany(hits)
-        .then((docs) => {
-          pubsub.publish(EVENTS.HIT.HIT_BATCH, docs);
+    }
 
-          const result = { data: docs };
-          const response = {
-            ...metadata,
-            timestamp: new Date(),
-            result,
-          };
+    /**
+     * Sender Client App
+     *  UI-Clients: Web / Mobile / Test UI
+     */
+    // Get the game server status.
+    socket.on(IO_EVENTS.UI_CLIENT.REQUEST_SERVER_STATUS, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.REQUEST_SERVER_STATUS}`
+        );
+      }
 
-          socket.emit(IO_EVENTS.GAME_FINISHED, response);
-          ioServer.to('web-clients').emit(IO_EVENTS.GAME_FINISHED, result);
-        })
-        .catch((err) => {
-          log('error', err);
-        });
+      socket.emit(IO_EVENTS.UI_CLIENT.REQUEST_SERVER_STATUS_SUCCEEDED, data);
+    });
+
+    // Get the game server log.
+    socket.on(IO_EVENTS.UI_CLIENT.REQUEST_SERVER_LOG, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.REQUEST_SERVER_LOG}`
+        );
+      }
+
+      socket.emit(IO_EVENTS.UI_CLIENT.REQUEST_SERVER_LOG_SUCCEEDED, data);
+    });
+
+    // Get information on all registered devices.
+    socket.on(IO_EVENTS.UI_CLIENT.REQUEST_REGISTERED_DEVICES, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.REQUEST_REGISTERED_DEVICES}`
+        );
+      }
+
+      socket.emit(
+        IO_EVENTS.UI_CLIENT.REQUEST_REGISTERED_DEVICES_SUCCEEDED,
+        data
+      );
+    });
+
+    // Set/reset all device states to prep for the next game.
+    socket.on(IO_EVENTS.UI_CLIENT.SET_STATE, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.SET_STATE}`
+        );
+      }
+      try {
+        socket.emit(IO_EVENTS.UI_CLIENT.SET_STATE_SUCCEEDED, data);
+      } catch (error) {
+        socket.emit(IO_EVENTS.UI_CLIENT.SET_STATE_FAILED, data);
+      }
+    });
+
+    // Start a game session by sending a game context. See section 1.1.1.
+    // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE, TARGET_UPDATE,
+    // TARGET_HIT events.
+    socket.on(IO_EVENTS.UI_CLIENT.START_GAME, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.START_GAME}`
+        );
+      }
+      try {
+        // socketServer
+        //   .to('gateway-servers')
+        //   .emit(IO_EVENTS.GATEWAY_CLIENT.DEVICES_CONTEXT_UPDATE, data);
+        // socketServer
+        //   .to('gateway-servers')
+        //   .emit(IO_EVENTS.GATEWAY_CLIENT.TARGET_UPDATE, data);
+        // socketServer
+        //   .to('gateway-servers')
+        //   .emit(IO_EVENTS.GATEWAY_CLIENT.TARGET_HIT, data);
+        socket.emit(IO_EVENTS.UI_CLIENT.START_GAME_SUCCEEDED, data);
+      } catch (error) {
+        if (isDevEnvironment) {
+          log('error', error);
+        }
+        socket.emit(IO_EVENTS.UI_CLIENT.START_GAME_FAILED, data);
+      }
+    });
+
+    // End a game session by cancelling it.
+    socket.on(IO_EVENTS.UI_CLIENT.END_GAME, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.END_GAME}`
+        );
+      }
+      try {
+        socket.emit(IO_EVENTS.UI_CLIENT.END_GAME_SUCCEEDED, data);
+      } catch (error) {
+        socket.emit(IO_EVENTS.UI_CLIENT.END_GAME_FAILED, data);
+      }
+    });
+
+    /**
+     * 1.3 - WebSocket Service Commands
+     * Sender Client App
+     *  UI-Clients: Web / Mobile / Test UI
+     */
+    socket.on(IO_EVENTS.UI_CLIENT.WS_POST_COMMAND, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.WS_POST_COMMAND}`
+        );
+      }
+
+      try {
+        const { eventType } = data;
+        switch (eventType) {
+          case 'RESET_DATA':
+            // Delete all device and event log data in the server database.
+
+            break;
+          case 'CLEAR_LOG':
+            // Clear the event log in the server database.
+
+            break;
+          case 'PING':
+            // Send a GET /status to a registered device to get latest context.
+            // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE event.
+            socketServer
+              .to('gateway-servers')
+              .emit(IO_EVENTS.GATEWAY_CLIENT.PING, data);
+
+            break;
+          case 'PING_ALL':
+            // Send a GET /status to all registered devices to get all context updates.
+            // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE event.
+            socketServer
+              .to('gateway-servers')
+              .emit(IO_EVENTS.GATEWAY_CLIENT.PING_ALL, data);
+
+            break;
+          case 'SET_DEVICE_CONFIG':
+            // Send a POST /config to a registered device to set configuration.
+            // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE event.
+            socketServer
+              .to('gateway-servers')
+              .emit(IO_EVENTS.GATEWAY_CLIENT.SET_DEVICE_CONFIG, data);
+
+            break;
+          case 'SET_DEVICE_MODE':
+            // Send a POST /mode to a registered device to set game mode.
+            // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE event.
+            socketServer
+              .to('gateway-servers')
+              .emit(IO_EVENTS.GATEWAY_CLIENT.SET_DEVICE_MODE, data);
+
+            break;
+          case 'START_DEVICE':
+            // Send a POST /start to a registered device to start game.
+            // Server WebSocket asynchronously emits DEVICES_CONTEXT_UPDATE event.
+            socketServer
+              .to('gateway-servers')
+              .emit(IO_EVENTS.GATEWAY_CLIENT.START_DEVICE, data);
+
+            break;
+          default:
+            break;
+        }
+
+        socket.emit(IO_EVENTS.UI_CLIENT.WS_POST_COMMAND_SUCCEEDED, data);
+      } catch (error) {
+        socket.emit(IO_EVENTS.UI_CLIENT.WS_POST_COMMAND_FAILED, data);
+      }
+    });
+
+    /**
+     * Events comming from Game-Controller through Gateway
+     */
+    socket.on(IO_EVENTS.GATEWAY_CLIENT.DEVICES_CONTEXT_UPDATE, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.GATEWAY_CLIENT.DEVICES_CONTEXT_UPDATE}`
+        );
+      }
+      try {
+        socketServer
+          .to('web-clients')
+          .emit(IO_EVENTS.UI_CLIENT.DEVICES_CONTEXT_UPDATE, data);
+      } catch (error) {
+        if (isDevEnvironment) {
+          log(
+            'error',
+            `Event ${IO_EVENTS.GATEWAY_CLIENT.DEVICES_CONTEXT_UPDATE} emitted from Client [id=${socket.id}] failed`
+          );
+        }
+      }
+    });
+    socket.on(IO_EVENTS.GATEWAY_CLIENT.TARGET_UPDATE, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.GATEWAY_CLIENT.TARGET_UPDATE}`
+        );
+      }
+      try {
+        socketServer
+          .to('web-clients')
+          .emit(IO_EVENTS.UI_CLIENT.TARGET_UPDATE, data);
+      } catch (error) {
+        if (isDevEnvironment) {
+          log(
+            'error',
+            `Event ${IO_EVENTS.GATEWAY_CLIENT.TARGET_UPDATE} emitted from Client [id=${socket.id}] failed`
+          );
+        }
+      }
+    });
+    socket.on(IO_EVENTS.GATEWAY_CLIENT.TARGET_HIT, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.GATEWAY_CLIENT.TARGET_HIT}`
+        );
+      }
+      try {
+        socketServer
+          .to('web-clients')
+          .emit(IO_EVENTS.UI_CLIENT.TARGET_HIT, data);
+      } catch (error) {
+        if (isDevEnvironment) {
+          log(
+            'error',
+            `Event ${IO_EVENTS.GATEWAY_CLIENT.TARGET_HIT} emitted from Client [id=${socket.id}] failed`
+          );
+        }
+      }
+    });
+    socket.on(IO_EVENTS.GATEWAY_CLIENT.DISPLAY_UPDATE, (data) => {
+      if (isDevEnvironment) {
+        log(
+          'info',
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.GATEWAY_CLIENT.DISPLAY_UPDATE}`
+        );
+      }
+      try {
+        socketServer
+          .to('web-clients')
+          .emit(IO_EVENTS.UI_CLIENT.DISPLAY_UPDATE, data);
+      } catch (error) {
+        if (isDevEnvironment) {
+          log(
+            'error',
+            `Event ${IO_EVENTS.GATEWAY_CLIENT.DISPLAY_UPDATE} emitted from Client [id=${socket.id}] failed`
+          );
+        }
+      }
+    });
+
+    socket.on('disconnecting', () => {
+      if (isDevEnvironment) {
+        log('default', `Client will be disconnect [id=${socket.id}]`);
+      }
+    });
+
+    /**
+     * When socket disconnects, remove it from the list:
+     */
+    socket.on('disconnect', (reason) => {
+      if (isDevEnvironment) {
+        log('warning', `Client gone [id=${socket.id}]`, reason);
+      }
     });
   });
+};
 
-  socket.on('disconnecting', () => {
-    log('default', `Client will be disconnect [id=${socket.id}]`);
-  });
-
-  /**
-   * When socket disconnects, remove it from the list:
-   */
-  socket.on('disconnect', (reason) => {
-    log('warning', `Client gone [id=${socket.id}]`, reason);
-  });
-});
+export default { socketServer, run };

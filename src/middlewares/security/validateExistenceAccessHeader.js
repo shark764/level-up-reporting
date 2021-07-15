@@ -1,4 +1,4 @@
-import { error } from '../utils/response';
+import { error } from '../../utils/response';
 
 export const validateExistenceAccessHeader = (req, res, next) => {
   const accessHeader = req.headers.access;

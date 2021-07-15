@@ -9,9 +9,9 @@ const password = process.env.REDIS_PASSWORD;
 const client = new Redis({
   port,
   host,
-  password,
-  db,
-  tls: {},
+  // password,
+  // db,
+  // tls: {},
 });
 
 export const sadd = (set, value, callback) => client.sadd(set, value, callback);

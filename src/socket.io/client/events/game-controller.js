@@ -1,10 +1,15 @@
-const prefix = '__game_controller_';
-const gamePrefix = '_game_event';
+/**
+ * WS EVENTS
+ */
 
-export const START_GAME = `${prefix}::${gamePrefix}::_start`;
-export const GAME_STARTED = `${prefix}::${gamePrefix}::_started`;
-export const ADD_PLAYER = `${prefix}::${gamePrefix}::_add-player`;
-export const PLAYER_ADDED = `${prefix}::${gamePrefix}::_player-added`;
-export const TARGET_HIT = `${prefix}::${gamePrefix}::_target-hit`;
-export const FINISH_GAME = `${prefix}::${gamePrefix}::_finish`;
-export const GAME_FINISHED = `${prefix}::${gamePrefix}::_finished`;
+// Events received from reporting
+export const SET_DEVICE_CONFIG = 'SET_DEVICE_CONFIG';
+export const SET_DEVICE_MODE = 'SET_DEVICE_MODE';
+export const START_DEVICE = 'START_DEVICE';
+export const PING = 'PING';
+
+// Events emitted to game-controller
+export const DEVICES_CONTEXT_UPDATE = 'DEVICES_CONTEXT_UPDATE';
+export const TARGET_HIT = 'TARGET_HIT';
+export const TARGET_UPDATE = 'TARGET_UPDATE';
+export const DISPLAY_UPDATE = 'DISPLAY_UPDATE';

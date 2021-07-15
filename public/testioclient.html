@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Web site to test reporting server" />
+    <title>Server Test</title>
     <script
       src="https://cdn.socket.io/4.0.0/socket.io.min.js"
       integrity="sha384-DkkWv9oJFWLIydBXXjkBWnG1/fuVhw8YPBq37uvvD6WSYRFRqr21eY5Dg9ZhmWdy"
@@ -12,12 +16,11 @@
       let gameId;
       window.onload = function() {
         const socket = io(`http://localhost:${port}`, {
-          path: '/game-controller-socket.io',
+          path: '/game-controller-server',
           reconnectionDelayMax: 10000,
           withCredentials: true,
           extraHeaders: {
-            'levelup-token-header':
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+            'levelup-token-header': 'levelup-token-header-value',
           },
           query: {
             type: 'device',
@@ -85,9 +88,9 @@
   </head>
   <body>
     <form id="form" action="">
-      <button id="new">New Game</button>
-      <button id="hit">Hit</button>
-      <button id="end">End Game</button>
+      <button type="button" id="new">New Game</button>
+      <button type="button" id="hit">Hit</button>
+      <button type="button" id="end">End Game</button>
     </form>
   </body>
 </html>

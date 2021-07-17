@@ -4,8 +4,8 @@ import { log } from '../../utils';
 import { getClientOptions } from '../../utils/consts';
 import { EVENTS } from './events';
 
-const gameControllerPort = process.env.GAME_CONTROLLER_PORT || 3012;
-const reportingPort = process.env.REPORTING_PORT || 3010;
+const gameControllerPort = process.env.GAME_CONTROLLER_PORT || 3011;
+const reportingPort = process.env.REPORTING_PORT || 3009;
 const isDevEnvironment = process.env.NODE_ENV === 'development';
 
 const gameControllerUri = process.env.GAME_CONTROLLER_URI;

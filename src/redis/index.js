@@ -1,5 +1,5 @@
-import Redis from 'ioredis';
 import { promisify } from 'util';
+import Redis from 'ioredis';
 
 const port = process.env.REDIS_PORT;
 const host = process.env.REDIS_HOST;

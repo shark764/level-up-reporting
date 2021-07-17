@@ -1,49 +1,25 @@
 import 'dotenv/config';
-import { Server } from 'socket.io';
 import { models } from '../../models/schemas';
 import pubsub, { EVENTS } from '../../subscription';
-import { getRoomByClientType, log, socketIOPath } from '../../utils';
-import { whiteList } from '../../utils/consts';
+import { getRoomByClientType, log } from '../../utils';
 
 import { sadd, smembers } from '../../redis';
 
 import { EVENTS as IO_EVENTS } from './events';
 
-const port = process.env.IO_PORT || 3009;
+const port = process.env.PORT || 3009;
 const isDevEnvironment = process.env.NODE_ENV === 'development';
-
-/**
- * Restricting access to server using a whitelist
- */
-const corsOptions = {
-  origin: whiteList,
-  optionsSuccessStatus: 200, // For legacy browser support
-};
 
 /**
  * Socket.io is attached to a new HTTP Server so it uses a different port
  * We need this since Apollo is already using HTTP Server previously configured.
  * Socket.IO then listen to a new HTTP Server with a different port.
  */
-const socketServer = new Server(port, {
-  path: socketIOPath,
-  pingInterval: 10000,
-  pingTimeout: 5000,
-  cookie: false,
-  cors: {
-    ...corsOptions,
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['levelup-token-header'],
-    credentials: true,
-  },
-});
-
-const run = () => {
+const run = (socketServer) => {
   if (isDevEnvironment) {
     log(
       'success',
-      `\nSocket.IO Server accepting connections at port ${port} ....`,
-      `\nStarting timestamp: ${new Date()}`
+      `Socket.io Server accepting connections at [port=${port}] [starting timestamp=${new Date()}]`
     );
   }
 
@@ -338,4 +314,4 @@ const run = () => {
   });
 };
 
-export default { socketServer, run };
+export default { run };

@@ -12,11 +12,6 @@ import {
   validateSession,
   validateTokenAlive,
 } from '../middlewares/security';
-import {
-  devicesContextUpdate,
-  targetHit,
-  targetUpdate,
-} from '../middlewares/socket.io/game';
 
 // Express route
 const router = Router();

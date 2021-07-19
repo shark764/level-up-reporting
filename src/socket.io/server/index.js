@@ -14,6 +14,9 @@ const isDevEnvironment = process.env.NODE_ENV === 'development';
  * Socket.io is attached to a new HTTP Server so it uses a different port
  * We need this since Apollo is already using HTTP Server previously configured.
  * Socket.IO then listen to a new HTTP Server with a different port.
+ *
+ * UPDATE:
+ * Temporaryly http and socket use same port
  */
 const run = (socketServer) => {
   if (isDevEnvironment) {

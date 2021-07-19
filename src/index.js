@@ -31,6 +31,8 @@ import { whiteList } from './utils/consts';
  * Socket.io is attached to a new HTTP Server so it uses a different port
  * We need this since Apollo is already using HTTP Server previously configured.
  * Socket.IO then listen to a new HTTP Server with a different port.
+ *
+ * For testing purpose, HTTP and Socket are sharing same port
  */
 import ioServer from './socket.io/server';
 import ioClient from './socket.io/client';
@@ -181,7 +183,7 @@ server.applyMiddleware({
       }
     }),
 });
-server.installSubscriptionHandlers(httpServer);
+// server.installSubscriptionHandlers(httpServer);
 
 /**
  * Defining HTTP Endpoint Routes
@@ -192,16 +194,17 @@ app.use('/api/v1/tests', testRouter);
 
 /**
  * Set port, listen for requests
+ * WARNING!!
+ * app.listen(3000); will not work here, as it creates a new HTTP server
  */
 httpServer.listen({ port }, () => {
   if (isDevEnvironment) {
     log(
       'success',
-      `\nHTTP Server listening on port ${port} ....`,
+      `Reporting HTTP Server listening on [port=${port}] [starting timestamp=${new Date()}]`,
       `\nGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
-      `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
-      `\nRun Graphql Playground at http://${domain}:${port}${apolloPath}`,
-      `\nStarting timestamp: ${new Date()}`
+      // `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
+      `\nRun Graphql Playground at http://${domain}:${port}${apolloPath}`
     );
   }
 });

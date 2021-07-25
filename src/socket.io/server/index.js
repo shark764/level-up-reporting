@@ -125,7 +125,7 @@ const run = (socketServer) => {
         socket.emit(IO_EVENTS.UI_CLIENT.START_GAME_SUCCEEDED, data);
       } catch (error) {
         if (isDevEnvironment) {
-          log('error', error);
+          log('error', 'An error ocurred', error);
         }
         socket.emit(IO_EVENTS.UI_CLIENT.START_GAME_FAILED, data);
       }

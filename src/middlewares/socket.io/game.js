@@ -22,7 +22,7 @@ export const devicesContextUpdate = (req, res, next) => {
       .emit(IO_EVENTS.UI_CLIENT.START_GAME_SUCCEEDED, req.body);
   } catch (error) {
     if (isDevEnvironment) {
-      log('error', error);
+      log('error', 'An error ocurred', error);
     }
     socketServer
       .to('web-clients')
@@ -48,7 +48,7 @@ export const targetUpdate = (req, res, next) => {
       .emit(IO_EVENTS.UI_CLIENT.START_GAME_SUCCEEDED, req.body);
   } catch (error) {
     if (isDevEnvironment) {
-      log('error', error);
+      log('error', 'An error ocurred', error);
     }
     socketServer
       .to('web-clients')
@@ -74,7 +74,7 @@ export const targetHit = (req, res, next) => {
       .emit(IO_EVENTS.UI_CLIENT.START_GAME_SUCCEEDED, req.body);
   } catch (error) {
     if (isDevEnvironment) {
-      log('error', error);
+      log('error', 'An error ocurred', error);
     }
     socketServer
       .to('web-clients')

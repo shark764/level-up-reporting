@@ -47,6 +47,7 @@ import ioClient from './socket.io/client';
 import gameRouter from './routes/game.routes';
 import heartbeatRouter from './routes/heartbeat.routes';
 import testRouter from './routes/test.routes';
+import deviceRouter from './routes/device.routes';
 
 /**
  * Connect to database
@@ -199,6 +200,7 @@ server.applyMiddleware({
  */
 app.use('/api/v1', gameRouter);
 app.use('/api/v1', heartbeatRouter);
+app.use('/api/v1', deviceRouter);
 app.use('/api/v1/tests', testRouter);
 
 /**

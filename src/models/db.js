@@ -6,6 +6,8 @@ mongoose.Promise = global.Promise;
 
 mongoose.set('useCreateIndex', true);
 
+const isDevEnvironment = process.env.NODE_ENV === 'development';
+
 let connection;
 
 async function connect() {
@@ -20,15 +22,19 @@ async function connect() {
       useFindAndModify: false,
       useCreateIndex: true,
     });
-    log(
-      'success',
-      `\nConnected to mongodb database ....`,
-      `\nString connection: ${process.env.DB_CONNECTION_STRING}`,
-      `\nStarting timestamp: ${new Date()}`
-    );
+    if (isDevEnvironment) {
+      log(
+        'success',
+        `Connected to mongodb database [connection-string=${
+          process.env.DB_CONNECTION_STRING
+        }] [starting timestamp=${new Date()}]`
+      );
+    }
     return connection;
   } catch (error) {
-    log('error', `Cannot connect to the database...`, error);
+    if (isDevEnvironment) {
+      log('error', `Cannot connect to the database...`, error);
+    }
     process.exit();
   }
 }

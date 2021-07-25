@@ -1,5 +1,9 @@
 import 'dotenv/config';
-import { models } from '../../models/schemas';
+/**
+ * TODO:
+ * Fix models
+ */
+// import { models } from '../../models/schemas';
 import pubsub, { EVENTS } from '../../subscription';
 import { getRoomByClientType, log } from '../../utils';
 
@@ -16,7 +20,7 @@ const isDevEnvironment = process.env.NODE_ENV === 'development';
  * Socket.IO then listen to a new HTTP Server with a different port.
  *
  * UPDATE:
- * Temporaryly http and socket use same port
+ * Temporarily http and socket use same port
  */
 const run = (socketServer) => {
   if (isDevEnvironment) {
@@ -151,7 +155,7 @@ const run = (socketServer) => {
       if (isDevEnvironment) {
         log(
           'info',
-          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.WS_POST_COMMAND}`
+          `Client [id=${socket.id}] emitted event ${IO_EVENTS.UI_CLIENT.WS_POST_COMMAND} [type=${data.eventType}]`
         );
       }
 
@@ -217,7 +221,7 @@ const run = (socketServer) => {
     });
 
     /**
-     * Events comming from Game-Controller through Gateway
+     * Events coming from Game-Controller through Gateway
      */
     socket.on(IO_EVENTS.GATEWAY_CLIENT.DEVICES_CONTEXT_UPDATE, (data) => {
       if (isDevEnvironment) {

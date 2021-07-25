@@ -12,7 +12,11 @@ import { Server } from 'socket.io';
  * Connects to database
  */
 import database from './models/db';
-import { models } from './models/schemas';
+/**
+ * TODO:
+ * models has to point to new "schemas" repository
+ */
+// import { models } from './models/schemas';
 /**
  * schema contains typeDefs
  * for Apollo Server
@@ -141,7 +145,12 @@ const server = new ApolloServer({
     },
   },
   context: {
-    models,
+    /**
+     * TODO:
+     * Fix models
+     */
+    // models,
+    models: {},
     pubsub,
   },
   cors: true,

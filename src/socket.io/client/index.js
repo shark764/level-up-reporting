@@ -32,29 +32,32 @@ const reportingClient = io(reportingUri, getClientOptions('reporting-bff'));
 
 /**
  * ******************************
- * EVENTS COMMING FROM
+ * EVENTS COMING FROM
  * GAME-CONTROLLER SERVER
  * ******************************
  */
 const gameControllerEventsHandler = (args, message) => {
-  if (isDevEnvironment) {
-    log('info', `\nMessage received from game-controller server`);
-  }
   /**
    * Formatting new event with extra data
    */
   const forwardedMessage = {
     'event-received': args.eventReceived,
     'event-emitted': args.eventEmitted,
-    'origin-socket-id': gameControllerClient.id,
-    'target-socket-id': reportingClient.id,
+    origin: 'game-controller',
+    'socket-origin': gameControllerClient.id,
+    target: 'reporting-bff',
+    'socket-target': reportingClient.id,
     timestamp: new Date(),
     /**
-     * Message comming from game-controller
+     * Message coming from game-controller
      */
-    data: message ?? {},
+    data: message?.data ?? message ?? {},
   };
   if (isDevEnvironment) {
+    log(
+      'info',
+      `\nMessage received from game-controller server [event=${args.eventReceived}]`
+    );
     console.table([forwardedMessage]);
   }
   /**
@@ -62,7 +65,10 @@ const gameControllerEventsHandler = (args, message) => {
    */
   reportingClient.emit(args.eventEmitted, forwardedMessage);
   if (isDevEnvironment) {
-    log('info', `\nMessage forwarded to reporting-bff server`);
+    log(
+      'info',
+      `\nMessage forwarded to reporting-bff server [event=${args.eventEmitted}]`
+    );
   }
 
   /**
@@ -82,7 +88,7 @@ const runGameControllerClient = () => {
           Port: gameControllerPort,
           'Accepting on': gameControllerUri,
           socket: gameControllerClient.id,
-          Started: new Date(),
+          'Connection established': new Date(),
         },
       ]);
     }
@@ -147,29 +153,32 @@ const runGameControllerClient = () => {
 
 /**
  * ******************************
- * EVENTS COMMING FROM
+ * EVENTS COMING FROM
  * REPORTING-BFF SERVER
  * ******************************
  */
 const reportingEventsHandler = (args, message) => {
-  if (isDevEnvironment) {
-    log('info', `\nMessage received from reporting-bff server`);
-  }
   /**
    * Formatting new event with extra data
    */
   const forwardedMessage = {
     'event-received': args.eventReceived,
     'event-emitted': args.eventEmitted,
-    'origin-socket-id': reportingClient.id,
-    'target-socket-id': gameControllerClient.id,
+    origin: 'reporting-bff',
+    'socket-origin': reportingClient.id,
+    target: 'game-controller',
+    'socket-target': gameControllerClient.id,
     timestamp: new Date(),
     /**
-     * Message comming from reporting-bff
+     * Message coming from reporting-bff
      */
-    data: message ?? {},
+    data: message?.data ?? message ?? {},
   };
   if (isDevEnvironment) {
+    log(
+      'info',
+      `\nMessage received from reporting-bff server [event=${args.eventReceived}]`
+    );
     console.table([forwardedMessage]);
   }
   /**
@@ -177,7 +186,10 @@ const reportingEventsHandler = (args, message) => {
    */
   gameControllerClient.emit(args.eventEmitted, forwardedMessage);
   if (isDevEnvironment) {
-    log('info', `\nMessage forwarded to game-controller server`);
+    log(
+      'info',
+      `\nMessage forwarded to game-controller server [event=${args.eventEmitted}]`
+    );
     console.table([forwardedMessage]);
   }
 
@@ -198,7 +210,7 @@ const runReportingClient = () => {
           Port: reportingPort,
           'Accepting on': reportingUri,
           socket: reportingClient.id,
-          Started: new Date(),
+          'Connection established': new Date(),
         },
       ]);
     }

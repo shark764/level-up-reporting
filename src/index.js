@@ -56,6 +56,7 @@ database.connect();
 
 const domain = process.env.DOMAIN || 'localhost';
 const port = process.env.PORT || 3009;
+const ioPort = process.env.IO_PORT || 3010;
 const isDevEnvironment = process.env.NODE_ENV === 'development';
 
 const app = express();
@@ -100,7 +101,7 @@ const httpServer = createServer(app);
 /**
  * Start Socket.IO server
  */
-const socketServer = new Server(httpServer, {
+const socketServer = new Server(ioPort, {
   path: socketIOPath,
   pingInterval: 25 * 1000,
   pingTimeout: 5000,
@@ -193,7 +194,7 @@ server.applyMiddleware({
       }
     }),
 });
-// server.installSubscriptionHandlers(httpServer);
+server.installSubscriptionHandlers(httpServer);
 
 /**
  * Defining HTTP Endpoint Routes
@@ -214,7 +215,7 @@ httpServer.listen({ port }, () => {
       'success',
       `Reporting HTTP Server listening on [port=${port}] [starting timestamp=${new Date()}]`,
       `\nGraphql Server ready at http://${domain}:${port}${server.graphqlPath}`,
-      // `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
+      `\nSubscriptions ready at ws://${domain}:${port}${server.subscriptionsPath}`,
       `\nRun Graphql Playground at http://${domain}:${port}${apolloPath}`
     );
   }

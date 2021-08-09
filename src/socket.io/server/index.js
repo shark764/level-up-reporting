@@ -11,7 +11,7 @@ import { sadd, smembers } from '../../redis';
 
 import { EVENTS as IO_EVENTS } from './events';
 
-const port = process.env.PORT || 3009;
+const port = process.env.IO_PORT || 3010;
 const isDevEnvironment = process.env.NODE_ENV === 'development';
 
 /**

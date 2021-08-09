@@ -8,7 +8,8 @@ export const game = {
   },
   Mutation: {
     addGame: async (parent, { name }, { models, pubsub }) => {
-      const record = await models.Game.create({ name });
+      // const record = await models.Game.create({ name });
+      const record = await { id: '1234', name: 'Game #1' };
       pubsub.publish(EVENTS.GAME.GAME_CREATED, record);
 
       return record;

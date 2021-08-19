@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { heartbeat } from '../controllers/heartbeat.controller';
+import { heartbeat, register } from '../controllers/game-controller.controller';
 import { authorization } from '../controllers/general.controller';
 import { validator } from '../validation/game-controller';
 import {
@@ -8,10 +8,24 @@ import {
   validateTokenAlive,
 } from '../middlewares/security';
 
+/**
+ * Game Controller Communication
+ */
+
 // Express route
 const router = Router();
 
-// Sends a heartbeat to cloud game server about itself and all connected devices.
+// Registers the Game Controller to the mothership
+// each time the hardware starts up.
+router.post(
+  '/register',
+  authorization,
+  [validateExistenceAccessHeader, validateSession, validateTokenAlive],
+  validator,
+  register
+);
+// Sends a heartbeat to cloud game server
+// about itself and all connected devices.
 router.post(
   '/heartbeat',
   authorization,

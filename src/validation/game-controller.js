@@ -3,31 +3,42 @@ import { log } from '../utils';
 import { error } from '../utils/response';
 
 export const validator = [
-  check('deviceId', 'Device ID is required')
+  check('device_id', 'Device ID is required')
     .not()
     .isEmpty(),
-  check('deviceType', 'Device type is required')
+
+  check('balena_name', 'Balena name is required')
     .not()
     .isEmpty(),
-  check('deviceType')
+  check('balena_name')
+    .isLength({ min: 3 })
+    .withMessage('Balena name must be at least 3 chars long'),
+
+  check('device_type', 'Device type is required')
+    .not()
+    .isEmpty(),
+  check('device_type')
     .isLength({ min: 3 })
     .withMessage('Device type must be at least 3 chars long'),
-  check('osVersion', 'OS version is required')
+
+  check('device_info', 'Device info is required')
     .not()
     .isEmpty(),
-  check('osVersion')
+  check('device_info')
     .isLength({ min: 3 })
-    .withMessage('OS version must be at least 3 chars long'),
-  check('softwareVersion', 'Software version is required')
+    .withMessage('Device info must be at least 3 chars long'),
+
+  check('build_info', 'Build info is required')
     .not()
     .isEmpty(),
-  check('softwareVersion')
+  check('build_info')
     .isLength({ min: 3 })
-    .withMessage('Software version must be at least 3 chars long'),
+    .withMessage('Build info must be at least 3 chars long'),
+
   check('devices', 'Devices list is required').exists(),
-  check('devices', 'Devices list is empty').custom(
-    (value) => Array.isArray(value) && value.length
-  ),
+  // check('devices', 'Devices list is empty').custom(
+  //   (value) => Array.isArray(value) && value.length
+  // ),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -36,7 +47,7 @@ export const validator = [
         error({
           requestId: req.id,
           code: 400,
-          // errors: errors.array(),
+          errors: errors.array(),
         })
       );
     }

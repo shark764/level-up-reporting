@@ -45,9 +45,10 @@ import ioClient from './socket.io/client';
  * Import routes
  */
 import gameRouter from './routes/game.routes';
-import heartbeatRouter from './routes/heartbeat.routes';
+// import heartbeatRouter from './routes/heartbeat.routes';
 import testRouter from './routes/test.routes';
 import deviceRouter from './routes/device.routes';
+import gameControllerRouter from './routes/game-controller.routes';
 
 /**
  * Connect to database
@@ -200,8 +201,9 @@ server.installSubscriptionHandlers(httpServer);
  * Defining HTTP Endpoint Routes
  */
 app.use('/api/v1', gameRouter);
-app.use('/api/v1', heartbeatRouter);
+// app.use('/api/v1', heartbeatRouter);
 app.use('/api/v1', deviceRouter);
+app.use('/api/v1/', gameControllerRouter);
 app.use('/api/v1/tests', testRouter);
 
 /**

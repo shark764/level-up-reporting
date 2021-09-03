@@ -32,6 +32,10 @@ build:
   only : 
     - main
   stage: build
+  before_script:
+    - apk add git
+    - mkdir -p src/db/models/
+    - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/schemas.git src/db/models/schemas
   script:
     - docker build -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting -t $DOCKER_REGISTRY_URL/lul-registry/lul-reporting:$CI_COMMIT_SHORT_SHA .
     - mkdir ~/.docker
@@ -41,16 +45,21 @@ build:
 
 deploy_dev:
   only : 
-    - main
-  stage: deploy
+    - master
   image: devth/helm
+  stage: deploy
+  before_script:
+      - wget https://github.com/digitalocean/doctl/releases/download/v1.64.0/doctl-1.64.0-linux-amd64.tar.gz
+      - tar xf ./doctl-1.64.0-linux-amd64.tar.gz
+      - mv ./doctl /usr/local/bin
+      - doctl auth init --access-token $DIGITALOCEAN_ACCESS_TOKEN
+      - doctl kubernetes cluster kubeconfig save $DIGITALOCEAN_CLUSTER_NAME
+      - export KUBECONFIG=~/.kube/config
   script:
-      - export KUBECONFIG=$KUBECONFIG_file 
+      - export KUBECONFIG=kube/config 
       - git clone https://$GIT_USER:$GIT_TOKEN@gitlab.com/focus-ventures/lul-infra.git
       - cd lul-infra/charts
       - helm upgrade -i lul-reporting lul-reporting  -f lul-reporting/environments/dev.yaml
-
-
 
 # for other enviroment you can copy deploy_ step and do pretty much the same with the different namespace or cluster.
 

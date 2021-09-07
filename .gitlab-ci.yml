@@ -45,7 +45,7 @@ build:
 
 deploy_dev:
   only : 
-    - master
+    - main
   image: devth/helm
   stage: deploy
   before_script:
